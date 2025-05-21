@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.ui.screens.menu
+package fr.uge.wordrawid.screens.menu
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -38,10 +38,5 @@ fun MenuScreen(navController: NavController) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = { navController.navigate(Routes.COMPASS) }, modifier = Modifier.fillMaxWidth()) {
-            Text("Mini-jeu Boussole")
-        }
-
     }
 }

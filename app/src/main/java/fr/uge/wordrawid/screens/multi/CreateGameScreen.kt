@@ -1,5 +1,6 @@
 package fr.uge.wordrawid.screens.multi
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -7,7 +8,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import fr.uge.wordrawid.navigation.Routes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -20,6 +20,12 @@ import java.net.URL
 
 @Serializable
 data class CreateLobbyRequest(val pseudo: String)
+
+@Serializable
+data class CreateLobbyResponse(val player: Player, val joinCode: String, val gameId: Long)
+
+@Serializable
+data class Player(val id: Long, val name: String)
 
 @Composable
 fun CreateGameScreen(navController: NavController) {
@@ -54,10 +60,9 @@ fun CreateGameScreen(navController: NavController) {
           val result = createLobbyRequest(pseudo)
           withContext(Dispatchers.Main) {
             isLoading = false
-            responseMessage = result
-
-            if (result == "Partie créée avec succès") {
-              navController.navigate(Routes.LOBBY)
+            if (result != null) {
+              StompClientManager.connect(result.joinCode, result.player.id.toString())
+              navController.navigate("lobby/${result.joinCode}?playerId=${result.player.id}")
             }
           }
         }
@@ -79,7 +84,7 @@ fun CreateGameScreen(navController: NavController) {
   }
 }
 
-fun createLobbyRequest(pseudo: String): String {
+fun createLobbyRequest(pseudo: String): CreateLobbyResponse? {
   return try {
     val url = URL("http://10.0.2.2:8080/api/lobby/create")
     val json = Json { ignoreUnknownKeys = true }
@@ -90,13 +95,16 @@ fun createLobbyRequest(pseudo: String): String {
       setRequestProperty("Content-Type", "application/json")
       outputStream.write(jsonBody.toByteArray())
     }
-    val responseCode = connection.responseCode
-    if (responseCode in 200..299) {
-      "Partie créée avec succès"
+
+    if (connection.responseCode in 200..299) {
+      val response = connection.inputStream.bufferedReader().readText()
+      json.decodeFromString<CreateLobbyResponse>(response) // ✅ on retourne l’objet ici
     } else {
-      "Erreur serveur : $responseCode"
+      Log.e("CreateGameScreen", "Erreur lors de la création de la partie : ${connection.responseCode}")
+      null
     }
   } catch (e: Exception) {
-    "Erreur : ${e.message}"
+    Log.e("CreateGameScreen", "Erreur lors de la création de la partie", e)
+    null
   }
 }
