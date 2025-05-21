@@ -9,11 +9,11 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
 @Composable
-fun LobbyScreen(joinCode: String, playerId: String) {
+fun LobbyScreen(joinCode: String) {
   val snackbarHostState = remember { SnackbarHostState() }
   val secondarySnackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
-  val players = remember { mutableListOf(playerId) }
+  val players = StompClientManager.players
 
   LaunchedEffect(Unit) {
     scope.launch { snackbarHostState.showSnackbar("Tu es l’administrateur de la partie") }
@@ -61,7 +61,9 @@ fun LobbyScreen(joinCode: String, playerId: String) {
       Spacer(modifier = Modifier.height(24.dp))
       Text("Joueurs :", style = MaterialTheme.typography.titleMedium)
       Spacer(modifier = Modifier.height(12.dp))
-      players.forEach { player -> Text("• $player") }
+      players.forEach { player ->
+        Text("• ${player.id} - ${player.name}")
+      }
     }
   }
 }

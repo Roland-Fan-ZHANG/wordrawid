@@ -27,6 +27,9 @@ data class CreateLobbyResponse(val player: Player, val joinCode: String, val gam
 @Serializable
 data class Player(val id: Long, val name: String)
 
+@Serializable
+data class LobbyMessage(val type: String, val player: Player)
+
 @Composable
 fun CreateGameScreen(navController: NavController) {
   var pseudo by remember { mutableStateOf("") }
@@ -61,6 +64,7 @@ fun CreateGameScreen(navController: NavController) {
           withContext(Dispatchers.Main) {
             isLoading = false
             if (result != null) {
+              StompClientManager.players.add(result.player)
               StompClientManager.connect(result.joinCode, result.player.id.toString())
               navController.navigate("lobby/${result.joinCode}?playerId=${result.player.id}")
             }

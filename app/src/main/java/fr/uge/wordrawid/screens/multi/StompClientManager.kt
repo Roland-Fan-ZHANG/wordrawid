@@ -2,8 +2,10 @@ package fr.uge.wordrawid.screens.multi
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.serialization.json.Json
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.LifecycleEvent
@@ -13,7 +15,7 @@ object StompClientManager {
   private const val TAG = "STOMP"
   private var stompClient: StompClient? = null
   private val disposables = CompositeDisposable()
-
+  val players = mutableStateListOf<Player>()
 
   @SuppressLint("CheckResult")
   fun connect(joinCode: String, playerId: String) {
@@ -49,9 +51,18 @@ object StompClientManager {
       ?.observeOn(AndroidSchedulers.mainThread())
       ?.subscribe({ msg: StompMessage ->
         Log.d(TAG, "📨 Message reçu: ${msg.payload}")
+        try {
+          val data = Json.decodeFromString<LobbyMessage>(msg.payload)
+          if (data.type == "JOIN") {
+            players.add(data.player)
+          }
+        } catch (e: Exception) {
+          Log.e(TAG, "❌ Erreur de parsing STOMP", e)
+        }
       }, { e ->
         Log.e(TAG, "💥 Erreur abonnement topic", e)
       })
+
     disposable?.let { disposables.add(it) }
   }
 

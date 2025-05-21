@@ -31,8 +31,7 @@ fun AppNavGraph(
             )
         ) { backStackEntry ->
             val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
-            val playerId = backStackEntry.arguments?.getString("playerId") ?: ""
-            LobbyScreen(joinCode, playerId)
+            LobbyScreen(joinCode)
         }
         composable(Routes.COMPASS) { CompassGameScreen() }
     }
