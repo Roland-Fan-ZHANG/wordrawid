@@ -10,6 +10,6 @@ import androidx.compose.ui.Modifier
 @Composable
 fun MultiScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Multiplayer Mode")
+        Text("Coucou lobby")
     }
 }
