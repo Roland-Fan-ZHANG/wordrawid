@@ -1,15 +1,42 @@
+### ANDROID STUDIO ###
+.idea
+*.iws
 *.iml
-.gradle
-/local.properties
+*.ipr
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
-.DS_Store
+.kotlin
+
+### GRADLE ###
+.gradle
+/local.properties
+local.properties
 /build
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### CUSTOM ###
+/ignored
+.DS_Store
