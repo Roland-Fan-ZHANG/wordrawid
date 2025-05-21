@@ -1,15 +1,46 @@
-package fr.uge.wordrawid.ui.screens.multi
+package fr.uge.wordrawid.screens.multi
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import fr.uge.wordrawid.navigation.Routes
 
 @Composable
-fun MultiScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Coucou lobby")
+fun MultiScreen(navController: NavController) {
+  Column(
+    modifier = Modifier
+      .fillMaxSize()
+      .padding(24.dp),
+    verticalArrangement = Arrangement.Center,
+    horizontalAlignment = Alignment.CenterHorizontally
+  ) {
+    Text(
+      text = "Multijoueur",
+      fontSize = 28.sp,
+      style = MaterialTheme.typography.headlineMedium
+    )
+
+    Spacer(modifier = Modifier.height(48.dp))
+
+    Button(
+      onClick = {navController.navigate(Routes.CREATE_GAME)},
+      modifier = Modifier.fillMaxWidth()
+    ) {
+      Text("Créer une partie")
     }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Button(
+      onClick = { /* TODO: Naviguer vers l'écran pour rejoindre */ },
+      modifier = Modifier.fillMaxWidth()
+    ) {
+      Text("Rejoindre une partie avec un code")
+    }
+  }
 }
