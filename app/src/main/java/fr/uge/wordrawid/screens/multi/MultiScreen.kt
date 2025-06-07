@@ -37,7 +37,7 @@ fun MultiScreen(navController: NavController) {
     Spacer(modifier = Modifier.height(16.dp))
 
     Button(
-      onClick = { /* TODO: Naviguer vers l'écran pour rejoindre */ },
+      onClick = { navController.navigate(Routes.JOIN_GAME) },
       modifier = Modifier.fillMaxWidth()
     ) {
       Text("Rejoindre une partie avec un code")

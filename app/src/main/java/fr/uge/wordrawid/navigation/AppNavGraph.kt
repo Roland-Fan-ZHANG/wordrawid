@@ -10,8 +10,9 @@ import androidx.navigation.navArgument
 import fr.uge.wordrawid.screens.multi.CreateGameScreen
 import fr.uge.wordrawid.screens.multi.LobbyScreen
 import fr.uge.wordrawid.screens.menu.MenuScreen
-import fr.uge.wordrawid.ui.screens.minigame.CompassGameScreen
-import fr.uge.wordrawid.ui.screens.solo.SoloScreen
+import fr.uge.wordrawid.screens.multi.JoinGameScreen
+import fr.uge.wordrawid.screens.minigame.CompassGameScreen
+import fr.uge.wordrawid.screens.solo.SoloScreen
 import fr.uge.wordrawid.screens.multi.MultiScreen
 
 @Composable
@@ -23,15 +24,20 @@ fun AppNavGraph(
         composable(Routes.SOLO) { SoloScreen() }
         composable(Routes.MULTI) { MultiScreen(navController) }
         composable(Routes.CREATE_GAME) { CreateGameScreen(navController) }
+        composable(Routes.JOIN_GAME) { JoinGameScreen(navController) }
         composable(
             route = Routes.LOBBY,
             arguments = listOf(
+                navArgument("gameId") { type = NavType.LongType },
                 navArgument("joinCode") { type = NavType.StringType },
-                navArgument("playerId") { type = NavType.StringType }
+                navArgument("isAdmin") { type = NavType.BoolType }
             )
-        ) { backStackEntry ->
-            val joinCode = backStackEntry.arguments?.getString("joinCode") ?: ""
-            LobbyScreen(joinCode)
+        ) {
+            LobbyScreen(
+                gameId = it.arguments?.getLong("gameId") ?: 0L,
+                joinCode = it.arguments?.getString("joinCode") ?: "",
+                isAdmin = it.arguments?.getBoolean("isAdmin") == true
+            )
         }
         composable(Routes.COMPASS) { CompassGameScreen() }
     }

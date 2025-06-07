@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.ui.screens.solo
+package fr.uge.wordrawid.screens.solo
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

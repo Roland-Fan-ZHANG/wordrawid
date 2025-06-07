@@ -8,22 +8,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import fr.uge.wordrawid.dto.CreateGameRequest
+import fr.uge.wordrawid.dto.JoinGameRequest
 import fr.uge.wordrawid.dto.JoinGameResponse
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.net.HttpURLConnection
 import java.net.URL
 
 @Composable
-fun CreateGameScreen(navController: NavController) {
+fun JoinGameScreen(navController: NavController) {
   var pseudo by remember { mutableStateOf("") }
+  var joinCode by remember { mutableStateOf("") }
   var isLoading by remember { mutableStateOf(false) }
   var responseMessage by remember { mutableStateOf<String?>(null) }
+
+  val isFormValid = pseudo.isNotBlank() && joinCode.isNotBlank()
 
   Column(
     modifier = Modifier
@@ -32,7 +32,7 @@ fun CreateGameScreen(navController: NavController) {
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    Text("Créer une partie", style = MaterialTheme.typography.headlineMedium)
+    Text("Rejoindre une partie", style = MaterialTheme.typography.headlineMedium)
 
     Spacer(modifier = Modifier.height(32.dp))
 
@@ -43,27 +43,43 @@ fun CreateGameScreen(navController: NavController) {
       modifier = Modifier.fillMaxWidth()
     )
 
+    Spacer(modifier = Modifier.height(16.dp))
+
+    OutlinedTextField(
+      value = joinCode,
+      onValueChange = { joinCode = it },
+      label = { Text("Code de la partie") },
+      modifier = Modifier.fillMaxWidth()
+    )
+
     Spacer(modifier = Modifier.height(24.dp))
 
     Button(
       onClick = {
+        if (!isFormValid) {
+          responseMessage = "Veuillez remplir correctement le pseudo et le code."
+          return@Button
+        }
         isLoading = true
+        responseMessage = null
         CoroutineScope(Dispatchers.IO).launch {
-          val result = createLobbyRequest(pseudo)
+          val result = joinLobbyRequest(pseudo, joinCode)
           withContext(Dispatchers.Main) {
             isLoading = false
             if (result != null) {
               StompClientManager.players.add(result.player)
               StompClientManager.connect(result.joinCode, result.player.id.toString())
-              navController.navigate("lobby/${result.gameId}?joinCode=${result.joinCode}&isAdmin=true")
+              navController.navigate("lobby/${result.gameId}?joinCode=${result.joinCode}&isAdmin=false")
+            } else {
+              responseMessage = "Erreur lors de la tentative de connexion. Vérifiez les infos."
             }
           }
         }
       },
-      enabled = pseudo.isNotBlank(),
+      enabled = isFormValid,
       modifier = Modifier.fillMaxWidth()
     ) {
-      Text("Créer la partie")
+      Text("Rejoindre la partie")
     }
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -71,17 +87,18 @@ fun CreateGameScreen(navController: NavController) {
     if (isLoading) {
       CircularProgressIndicator()
     }
+
     responseMessage?.let {
-      Text(it, modifier = Modifier.padding(top = 16.dp))
+      Text(it, modifier = Modifier.padding(top = 16.dp), color = MaterialTheme.colorScheme.error)
     }
   }
 }
 
-private fun createLobbyRequest(pseudo: String): JoinGameResponse? {
+private fun joinLobbyRequest(pseudo: String, joinCode: String): JoinGameResponse? {
   return try {
-    val url = URL("http://10.0.2.2:8080/api/lobby/create")
+    val url = URL("http://10.0.2.2:8080/api/lobby/join")
     val json = Json { ignoreUnknownKeys = true }
-    val jsonBody = json.encodeToString(CreateGameRequest(pseudo))
+    val jsonBody = json.encodeToString(JoinGameRequest(pseudo = pseudo, joinCode = joinCode))
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "POST"
       doOutput = true
@@ -91,13 +108,13 @@ private fun createLobbyRequest(pseudo: String): JoinGameResponse? {
 
     if (connection.responseCode in 200..299) {
       val response = connection.inputStream.bufferedReader().readText()
-      json.decodeFromString<JoinGameResponse>(response) // ✅ on retourne l’objet ici
+      json.decodeFromString<JoinGameResponse>(response)
     } else {
-      Log.e("CreateGameScreen", "Erreur lors de la création de la partie : ${connection.responseCode}")
+      Log.e("JoinGameScreen", "Erreur HTTP ${connection.responseCode}")
       null
     }
   } catch (e: Exception) {
-    Log.e("CreateGameScreen", "Erreur lors de la création de la partie", e)
+    Log.e("JoinGameScreen", "Erreur lors de la requête de join", e)
     null
   }
 }

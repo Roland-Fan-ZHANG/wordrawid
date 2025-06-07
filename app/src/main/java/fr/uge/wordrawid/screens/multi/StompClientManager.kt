@@ -3,13 +3,18 @@ package fr.uge.wordrawid.screens.multi
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import fr.uge.wordrawid.model.Player
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.LifecycleEvent
 import ua.naiksoftware.stomp.dto.StompMessage
+
+@Serializable
+data class LobbyMessage(val type: String, val player: Player)
 
 object StompClientManager {
   private const val TAG = "STOMP"

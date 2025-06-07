@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.ui.screens.minigame
+package fr.uge.wordrawid.screens.minigame
 
 import android.app.Activity
 import android.content.Context

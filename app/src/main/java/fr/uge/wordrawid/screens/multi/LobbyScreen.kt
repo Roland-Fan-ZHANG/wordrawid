@@ -6,18 +6,75 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import fr.uge.wordrawid.dto.StartGameRequest
+
+private fun startGame(
+  scope: CoroutineScope,
+  snackbarHostState: SnackbarHostState,
+  adminName: String,
+  gameId: Long
+) {
+  scope.launch(Dispatchers.IO) {
+    val requestBody = StartGameRequest(adminName, gameId)
+    val jsonBody = Json.encodeToString(requestBody)
+
+    val url = URL("http://10.0.2.2:8080/api/lobby/start")
+    val connection = url.openConnection() as HttpURLConnection
+    try {
+      connection.requestMethod = "POST"
+      connection.setRequestProperty("Content-Type", "application/json")
+      connection.doOutput = true
+      connection.outputStream.use {
+        it.write(jsonBody.toByteArray())
+      }
+
+      val code = connection.responseCode
+      val message = if (code in 200..299) {
+        "Partie démarrée avec succès"
+      } else {
+        "Erreur serveur : $code"
+      }
+      withContext(Dispatchers.Main) {
+        snackbarHostState.showSnackbar(message)
+      }
+    } catch (e: Exception) {
+      withContext(Dispatchers.Main) {
+        snackbarHostState.showSnackbar("Erreur : ${e.message}")
+      }
+    } finally {
+      connection.disconnect()
+    }
+  }
+}
 
 @Composable
-fun LobbyScreen(joinCode: String) {
+fun LobbyScreen(
+  gameId: Long,
+  joinCode: String,
+  isAdmin: Boolean
+) {
   val snackbarHostState = remember { SnackbarHostState() }
   val secondarySnackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
   val players = StompClientManager.players
 
-  LaunchedEffect(Unit) {
-    scope.launch { snackbarHostState.showSnackbar("Tu es l’administrateur de la partie") }
-    scope.launch { secondarySnackbarHostState.showSnackbar("Partie créée avec succès") }
+  if (isAdmin) {
+    LaunchedEffect(Unit) {
+      scope.launch { snackbarHostState.showSnackbar("Tu es l’administrateur de la partie") }
+      scope.launch { secondarySnackbarHostState.showSnackbar("Partie créée avec succès") }
+    }
+  } else {
+    LaunchedEffect(Unit) {
+      scope.launch { secondarySnackbarHostState.showSnackbar("Partie rejointe avec succès") }
+    }
   }
 
   Scaffold(
@@ -63,6 +120,22 @@ fun LobbyScreen(joinCode: String) {
       Spacer(modifier = Modifier.height(12.dp))
       players.forEach { player ->
         Text("• ${player.id} - ${player.name}")
+      }
+      if (isAdmin) {
+        val admin = StompClientManager.players.first()
+        Spacer(modifier = Modifier.height(32.dp))
+        Button(
+          onClick = {
+            startGame(
+              scope = scope,
+              snackbarHostState = snackbarHostState,
+              adminName = admin.name,
+              gameId = gameId
+            )
+          }
+        ) {
+          Text("Démarrer la partie")
+        }
       }
     }
   }

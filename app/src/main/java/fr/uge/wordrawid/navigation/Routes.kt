@@ -6,5 +6,6 @@ object Routes {
     const val MULTI = "multi"
     const val COMPASS = "compass"
     const val CREATE_GAME = "create_game"
-    const val LOBBY = "lobby/{joinCode}?playerId={playerId}"
+    const val JOIN_GAME = "join_game"
+    const val LOBBY = "lobby/{gameId}?joinCode={joinCode}&isAdmin={isAdmin}"
 }
