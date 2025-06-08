@@ -3,7 +3,7 @@ package fr.uge.wordrawid.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class GameSession(
+data class Session(
   val id: Long,
   val joinCode: String,
   val adminName: String,

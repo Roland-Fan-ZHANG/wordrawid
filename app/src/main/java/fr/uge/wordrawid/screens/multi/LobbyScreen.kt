@@ -14,7 +14,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import fr.uge.wordrawid.dto.StartGameRequest
+import fr.uge.wordrawid.dto.http.StartGameRequest
 import fr.uge.wordrawid.model.Player
 
 private fun startGame(

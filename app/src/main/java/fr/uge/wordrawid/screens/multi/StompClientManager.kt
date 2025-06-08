@@ -9,7 +9,10 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.core.app.NotificationCompat
 import androidx.navigation.NavController
-import fr.uge.wordrawid.model.GameSession
+import fr.uge.wordrawid.dto.ws.GameMessage
+import fr.uge.wordrawid.dto.ws.LobbyMessage
+import fr.uge.wordrawid.dto.ws.LobbyMessageType
+import fr.uge.wordrawid.model.Session
 import fr.uge.wordrawid.model.Player
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -17,7 +20,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
@@ -27,24 +29,6 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.random.Random
-
-@Serializable
-enum class NotificationType {
-  JOIN, LEAVE, START
-}
-
-@Serializable
-data class LobbyMessage(
-  val notificationType: NotificationType,
-  val player: Player,
-  val content: String
-)
-
-@Serializable
-data class GameMessage(
-  val gameSession: GameSession,
-  val imageUrl: String
-)
 
 private fun showNotification(context: Context, message: String) {
   Log.i("NOTIF", "📣 showNotification: $message")
@@ -74,7 +58,7 @@ object StompClientManager {
   private lateinit var appContext: Context
   private var stompClient: StompClient? = null
   private val disposables = CompositeDisposable()
-  private var latestGameSession: GameSession? = null
+  private var latestSession: Session? = null
   private var gameImageFile: File? = null
   val players = mutableStateListOf<Player>()
   private var currentPlayerId: Long? = null
@@ -127,8 +111,8 @@ object StompClientManager {
 
           val data = Json.decodeFromString<LobbyMessage>(msg.payload)
 
-          when (data.notificationType) {
-            NotificationType.JOIN -> {
+          when (data.lobbyMessageType) {
+            LobbyMessageType.JOIN -> {
               val isSelf = data.player.id == currentPlayerId
               if (!players.any { it.id == data.player.id }) {
                 players.add(data.player)
@@ -144,7 +128,7 @@ object StompClientManager {
               }
             }
 
-            NotificationType.START -> {
+            LobbyMessageType.START -> {
               val gameId = data.content.toLongOrNull()
               if (gameId != null) {
                 val playerName = data.player.name
@@ -158,7 +142,7 @@ object StompClientManager {
               }
             }
 
-            else -> Log.w(TAG, "⚠️ Notification inconnue ou non gérée : ${data.notificationType}")
+            else -> Log.w(TAG, "⚠️ Notification inconnue ou non gérée : ${data.lobbyMessageType}")
           }
 
         } catch (e: Exception) {
@@ -179,16 +163,16 @@ object StompClientManager {
         Log.d(TAG, "📨 Message de jeu reçu: ${msg.payload}")
         try {
           val data = Json.decodeFromString<GameMessage>(msg.payload)
-          Log.i(TAG, "🎯 Données de jeu reçues pour gameId=${data.gameSession.id}")
-          Log.i(TAG, "📋 Session: ${data.gameSession}")
-          Log.i(TAG, "📋 Joueurs: ${data.gameSession.players.joinToString { it.name }}")
-          Log.i(TAG, "📋 Plateau: ${data.gameSession.gameManager.board.size} cases")
+          Log.i(TAG, "🎯 Données de jeu reçues pour gameId=${data.session.id}")
+          Log.i(TAG, "📋 Session: ${data.session}")
+          Log.i(TAG, "📋 Joueurs: ${data.session.players.joinToString { it.name }}")
+          Log.i(TAG, "📋 Plateau: ${data.session.gameManager.board.size} cases")
           Log.i(TAG, "📋 Image URL: ${data.imageUrl}")
 
-          downloadImage(appContext, data.imageUrl, data.gameSession.id) { file ->
+          downloadImage(appContext, data.imageUrl, data.session.id) { file ->
             gameImageFile = file
-            latestGameSession = data.gameSession
-            navController.navigate("game/${data.gameSession.id}")
+            latestSession = data.session
+            navController.navigate("game/${data.session.id}")
           }
         } catch (e: Exception) {
           Log.e(TAG, "❌ Erreur parsing GameMessage", e)

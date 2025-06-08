@@ -3,7 +3,7 @@ package fr.uge.wordrawid.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class GameCell(
+data class Cell(
   val id: Long,
   val mysteryWord: MysteryWord,
   var visited: Boolean,

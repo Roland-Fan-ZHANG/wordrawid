@@ -8,8 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import fr.uge.wordrawid.dto.JoinGameRequest
-import fr.uge.wordrawid.dto.JoinGameResponse
+import fr.uge.wordrawid.dto.http.JoinGameRequest
+import fr.uge.wordrawid.dto.http.JoinGameResponse
 import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

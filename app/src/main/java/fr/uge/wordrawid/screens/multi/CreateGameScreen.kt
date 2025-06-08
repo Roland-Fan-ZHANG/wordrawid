@@ -8,8 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import fr.uge.wordrawid.dto.CreateGameRequest
-import fr.uge.wordrawid.dto.CreateGameResponse
+import fr.uge.wordrawid.dto.http.CreateGameRequest
+import fr.uge.wordrawid.dto.http.CreateGameResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
