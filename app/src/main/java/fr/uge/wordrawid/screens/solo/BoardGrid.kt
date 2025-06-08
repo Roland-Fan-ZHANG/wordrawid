@@ -1,7 +1,6 @@
-package fr.uge.wordrawid.ui.screens.solo
+package fr.uge.wordrawid.screens.solo
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
