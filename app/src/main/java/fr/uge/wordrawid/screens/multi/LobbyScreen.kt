@@ -15,15 +15,16 @@ import java.net.URL
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import fr.uge.wordrawid.dto.StartGameRequest
+import fr.uge.wordrawid.model.Player
 
 private fun startGame(
   scope: CoroutineScope,
   snackbarHostState: SnackbarHostState,
-  adminName: String,
+  admin: Player,
   gameId: Long
 ) {
   scope.launch(Dispatchers.IO) {
-    val requestBody = StartGameRequest(adminName, gameId)
+    val requestBody = StartGameRequest(admin, gameId)
     val jsonBody = Json.encodeToString(requestBody)
 
     val url = URL("http://10.0.2.2:8080/api/lobby/start")
@@ -129,7 +130,7 @@ fun LobbyScreen(
             startGame(
               scope = scope,
               snackbarHostState = snackbarHostState,
-              adminName = admin.name,
+              admin = admin,
               gameId = gameId
             )
           }

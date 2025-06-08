@@ -59,7 +59,7 @@ fun CreateGameScreen(navController: NavController) {
             isLoading = false
             if (result != null) {
               StompClientManager.players.add(result.player)
-              StompClientManager.connect(result.joinCode, result.player.id.toString())
+              StompClientManager.connect(result.joinCode, result.player.id.toString(), navController)
               navController.navigate("lobby/${result.gameId}?joinCode=${result.joinCode}&isAdmin=true")
             } else {
               responseMessage = "Erreur lors de la tentative de connexion. Vérifiez les infos."

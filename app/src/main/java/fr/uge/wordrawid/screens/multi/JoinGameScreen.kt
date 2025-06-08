@@ -62,7 +62,7 @@ fun JoinGameScreen(navController: NavController) {
         isLoading = true
         responseMessage = null
         CoroutineScope(Dispatchers.IO).launch {
-          Log.i("JoinGameScreen", "Pseudo = ${pseudo} ; Joincode = ${joinCode}")
+          Log.i("JoinGameScreen", "Pseudo = $pseudo ; Joincode = $joinCode")
           val result = joinLobbyRequest(pseudo = pseudo, joinCode = joinCode)
           withContext(Dispatchers.Main) {
             isLoading = false
@@ -70,7 +70,7 @@ fun JoinGameScreen(navController: NavController) {
               StompClientManager.players.clear()
               StompClientManager.players.addAll(result.otherPlayers)
               StompClientManager.players.add(result.player)
-              StompClientManager.connect(result.joinCode, result.player.id.toString())
+              StompClientManager.connect(result.joinCode, result.player.id.toString(), navController)
               navController.navigate("lobby/${result.gameId}?joinCode=${result.joinCode}&isAdmin=false")
             } else {
               responseMessage = "Erreur lors de la tentative de connexion. Vérifiez les infos."
