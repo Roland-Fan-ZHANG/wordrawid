@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.wordrawid.dto.CreateGameRequest
-import fr.uge.wordrawid.dto.JoinGameResponse
+import fr.uge.wordrawid.dto.CreateGameResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,6 +24,7 @@ fun CreateGameScreen(navController: NavController) {
   var pseudo by remember { mutableStateOf("") }
   var isLoading by remember { mutableStateOf(false) }
   var responseMessage by remember { mutableStateOf<String?>(null) }
+  val isPseudoValid = pseudo.isNotBlank()
 
   Column(
     modifier = Modifier
@@ -47,6 +48,10 @@ fun CreateGameScreen(navController: NavController) {
 
     Button(
       onClick = {
+        if (!isPseudoValid) {
+          responseMessage = "Veuillez remplir correctement le pseudo."
+          return@Button
+        }
         isLoading = true
         CoroutineScope(Dispatchers.IO).launch {
           val result = createLobbyRequest(pseudo)
@@ -56,11 +61,13 @@ fun CreateGameScreen(navController: NavController) {
               StompClientManager.players.add(result.player)
               StompClientManager.connect(result.joinCode, result.player.id.toString())
               navController.navigate("lobby/${result.gameId}?joinCode=${result.joinCode}&isAdmin=true")
+            } else {
+              responseMessage = "Erreur lors de la tentative de connexion. Vérifiez les infos."
             }
           }
         }
       },
-      enabled = pseudo.isNotBlank(),
+      enabled = isPseudoValid,
       modifier = Modifier.fillMaxWidth()
     ) {
       Text("Créer la partie")
@@ -77,7 +84,7 @@ fun CreateGameScreen(navController: NavController) {
   }
 }
 
-private fun createLobbyRequest(pseudo: String): JoinGameResponse? {
+private fun createLobbyRequest(pseudo: String): CreateGameResponse? {
   return try {
     val url = URL("http://10.0.2.2:8080/api/lobby/create")
     val json = Json { ignoreUnknownKeys = true }
@@ -91,7 +98,7 @@ private fun createLobbyRequest(pseudo: String): JoinGameResponse? {
 
     if (connection.responseCode in 200..299) {
       val response = connection.inputStream.bufferedReader().readText()
-      json.decodeFromString<JoinGameResponse>(response) // ✅ on retourne l’objet ici
+      json.decodeFromString<CreateGameResponse>(response)
     } else {
       Log.e("CreateGameScreen", "Erreur lors de la création de la partie : ${connection.responseCode}")
       null

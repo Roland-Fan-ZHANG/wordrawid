@@ -22,7 +22,6 @@ fun JoinGameScreen(navController: NavController) {
   var joinCode by remember { mutableStateOf("") }
   var isLoading by remember { mutableStateOf(false) }
   var responseMessage by remember { mutableStateOf<String?>(null) }
-
   val isFormValid = pseudo.isNotBlank() && joinCode.isNotBlank()
 
   Column(
@@ -63,10 +62,13 @@ fun JoinGameScreen(navController: NavController) {
         isLoading = true
         responseMessage = null
         CoroutineScope(Dispatchers.IO).launch {
-          val result = joinLobbyRequest(pseudo, joinCode)
+          Log.i("JoinGameScreen", "Pseudo = ${pseudo} ; Joincode = ${joinCode}")
+          val result = joinLobbyRequest(pseudo = pseudo, joinCode = joinCode)
           withContext(Dispatchers.Main) {
             isLoading = false
             if (result != null) {
+              StompClientManager.players.clear()
+              StompClientManager.players.addAll(result.otherPlayers)
               StompClientManager.players.add(result.player)
               StompClientManager.connect(result.joinCode, result.player.id.toString())
               navController.navigate("lobby/${result.gameId}?joinCode=${result.joinCode}&isAdmin=false")
@@ -87,7 +89,6 @@ fun JoinGameScreen(navController: NavController) {
     if (isLoading) {
       CircularProgressIndicator()
     }
-
     responseMessage?.let {
       Text(it, modifier = Modifier.padding(top = 16.dp), color = MaterialTheme.colorScheme.error)
     }

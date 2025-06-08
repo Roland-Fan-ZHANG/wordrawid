@@ -73,7 +73,7 @@ fun LobbyScreen(
     }
   } else {
     LaunchedEffect(Unit) {
-      scope.launch { secondarySnackbarHostState.showSnackbar("Partie rejointe avec succès") }
+      scope.launch { secondarySnackbarHostState.showSnackbar("Tu as rejoint la partie : $joinCode") }
     }
   }
 
