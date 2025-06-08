@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.ui.screens.solo
+package fr.uge.wordrawid.screens.solo
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -9,19 +9,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import fr.uge.wordrawid.screens.solo.BoardGrid
 import fr.uge.wordrawid.screens.solo.DiceWithImage
+import fr.uge.wordrawid.screens.solo.Player
 import fr.uge.wordrawid.screens.solo.RandomImage
 import fr.uge.wordrawid.screens.solo.rollDice
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Écran principal avec animation
+ * Écran principal avec animation, joueur et plateau
  */
 @Composable
 fun SoloScreen() {
-    var finalResult by remember { mutableStateOf(1) }      // résultat « officiel »
-    var displayResult by remember { mutableStateOf(1) }    // ce qu’on affiche à l’écran
-    var rolling by remember { mutableStateOf(false) }      // flag animation
+    var finalResult by remember { mutableStateOf(1) }
+    var displayResult by remember { mutableStateOf(1) }
+    var rolling by remember { mutableStateOf(false) }
+    var playerPosition by remember { mutableStateOf(0) }
+
     val scope = rememberCoroutineScope()
 
     fun startRolling() {
@@ -34,15 +37,17 @@ fun SoloScreen() {
             }
             finalResult = rollDice()
             displayResult = finalResult
+
+            // Animation de déplacement case par case avec une pause plus longue
+            val steps = finalResult
+            repeat(steps) {
+                playerPosition = (playerPosition + 1) % 25
+                delay(200) // pause de 200ms entre chaque case
+            }
+
             rolling = false
         }
     }
-
-    DiceWithImage(
-        displayResult = displayResult,
-        onRoll = { startRolling() },
-        rolling = rolling
-    )
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -50,5 +55,12 @@ fun SoloScreen() {
     ) {
         RandomImage()
         BoardGrid()
+        Player(position = playerPosition)
     }
+
+    DiceWithImage(
+        displayResult = displayResult,
+        onRoll = { startRolling() },
+        rolling = rolling
+    )
 }

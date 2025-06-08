@@ -5,9 +5,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import fr.uge.wordrawid.screens.solo.SoloScreen
 import fr.uge.wordrawid.ui.screens.menu.MenuScreen
 import fr.uge.wordrawid.ui.screens.minigame.CompassGameScreen
-import fr.uge.wordrawid.ui.screens.solo.SoloScreen
 import fr.uge.wordrawid.ui.screens.multi.MultiScreen
 
 @Composable
