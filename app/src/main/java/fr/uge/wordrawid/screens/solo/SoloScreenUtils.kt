@@ -47,8 +47,14 @@ fun handleAction(viewModel: SoloViewModel, scope: CoroutineScope, navController:
     }
 
     when (action) {
-        is CaseAction.MoveForward2 -> animateMovement(viewModel, 2, scope)
-        is CaseAction.MoveBackward3 -> animateMovement(viewModel, 3, scope, forward = false)
+        is CaseAction.MoveForward2 -> {
+            animateMovement(viewModel, 2, scope)
+            viewModel.caseMasquee[viewModel.playerPosition] = false
+        }
+        is CaseAction.MoveBackward3 -> {
+            animateMovement(viewModel, 3, scope, forward = false)
+            viewModel.caseMasquee[viewModel.playerPosition] = false
+        }
         is CaseAction.RevealTile -> viewModel.caseMasquee[viewModel.playerPosition] = false
         is CaseAction.CompassMiniGame -> navController.navigate(Routes.COMPASS)
         is CaseAction.BalloonMiniGame -> navController.navigate(Routes.BALLOON)

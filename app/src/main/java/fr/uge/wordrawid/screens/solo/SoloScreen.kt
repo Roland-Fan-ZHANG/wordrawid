@@ -1,6 +1,8 @@
 package fr.uge.wordrawid.screens.solo
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,43 +27,51 @@ fun SoloScreen(navController: NavController, viewModel: SoloViewModel = viewMode
         LaunchedEffect(Unit) { navController.navigate(Routes.WIN) }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Box(modifier = Modifier.weight(1f)) {
-            DiceSection(viewModel, onRoll = { startRolling(viewModel, scope, navController) })
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        maxWidth
 
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(48.dp))
 
-                BoardSection(viewModel)
+                BoardSection(
+                    viewModel
+                )
 
-                Spacer(modifier = Modifier.height(200.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                DiceSection(
+                    viewModel,
+                    onRoll = { startRolling(viewModel, scope, navController) }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = viewModel.currentActionText,
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier.padding(4.dp)
                 )
 
                 Text(
                     text = viewModel.gameMessage,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier
-                        .padding(8.dp)
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(4.dp)
                 )
             }
+
+            GuessSection(
+                viewModel = viewModel,
+                onCheck = { checkGuess(viewModel) }
+            )
         }
-
-        GuessSection(
-            viewModel = viewModel,
-            onCheck = { checkGuess(viewModel) }
-        )
-
-        Spacer(modifier = Modifier.height(48.dp))
-
     }
 }
