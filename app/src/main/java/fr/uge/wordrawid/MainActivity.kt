@@ -1,5 +1,6 @@
 package fr.uge.wordrawid
 
+import android.Manifest
 import android.os.Build
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
@@ -16,6 +17,7 @@ import fr.uge.wordrawid.screens.multi.StompClientManager
 class MainActivity : ComponentActivity() {
 
     @SuppressLint("SourceLockedOrientationActivity")
+    @androidx.annotation.RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun onCreate(savedInstanceState: Bundle?) {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         super.onCreate(savedInstanceState)
@@ -23,7 +25,7 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
                 1
             )
         }

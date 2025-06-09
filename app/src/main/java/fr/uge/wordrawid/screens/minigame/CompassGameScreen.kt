@@ -33,7 +33,7 @@ fun CompassGameScreen(navController: NavController) {
     val currentRound = remember { mutableStateOf(0) }
     val totalRounds = 4
     val goalReached = remember { mutableStateOf(false) }
-    val timer = remember { mutableStateOf(20) }
+    val timer = remember { mutableStateOf(30) }
 
     LaunchedEffect(Unit) {
         while (timer.value > 0 && !goalReached.value) {
@@ -97,11 +97,6 @@ fun CompassGameScreen(navController: NavController) {
             Text("Progression : ${currentRound.value}/$totalRounds", fontSize = 18.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Text("Temps restant : ${timer.value} s", fontSize = 18.sp)
-
-            if (goalReached.value) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Bravo ! Vous avez réussi les $totalRounds rotations.", fontSize = 20.sp)
-            }
         }
     }
 

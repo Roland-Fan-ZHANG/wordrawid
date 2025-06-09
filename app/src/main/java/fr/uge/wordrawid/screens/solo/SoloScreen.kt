@@ -42,13 +42,20 @@ fun SoloScreen(navController: NavController, viewModel: SoloViewModel = viewMode
     }
 
     fun handleAction(action: CaseAction) = scope.launch {
+        if (!viewModel.caseMasquee[viewModel.playerPosition] &&
+            (action is CaseAction.CompassMiniGame || action is CaseAction.BalloonMiniGame)
+        ) {
+            viewModel.currentActionText = "Case déjà révélée, pas de mini-jeu"
+            return@launch
+        }
+
         viewModel.currentActionText = when (action) {
-            is CaseAction.MoveForward2 -> "Avance de 2 cases!"
-            is CaseAction.MoveBackward3 -> "Recule de 3 cases!"
-            is CaseAction.CompassMiniGame -> "Mini-jeu !"
-            is CaseAction.BalloonMiniGame -> "Mini-jeu !"
-            is CaseAction.RevealTile -> "Révèle une case!"
-            is CaseAction.Nothing -> "Aucune action."
+            is CaseAction.MoveForward2 -> "Avance de 2 cases"
+            is CaseAction.MoveBackward3 -> "Recule de 3 cases"
+            is CaseAction.CompassMiniGame -> "Mini-jeu"
+            is CaseAction.BalloonMiniGame -> "Mini-jeu"
+            is CaseAction.RevealTile -> "Révèle une case"
+            is CaseAction.Nothing -> "Aucune action"
         }
 
         when (action) {

@@ -30,7 +30,6 @@ fun BalloonGameScreen(navController: NavController) {
     var gameResult by remember { mutableStateOf(false) }
     var timeLeft by remember { mutableStateOf((gameDurationMillis / 1000).toInt()) }
 
-    // Demande la permission du micro
     val micPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
@@ -66,7 +65,7 @@ fun BalloonGameScreen(navController: NavController) {
             delay(1000L)
             navController.previousBackStackEntry
                 ?.savedStateHandle
-                ?.set("balloonResult", gameResult)
+                ?.set("minigameResult", gameResult)
             navController.navigateUp()
         }
     }
