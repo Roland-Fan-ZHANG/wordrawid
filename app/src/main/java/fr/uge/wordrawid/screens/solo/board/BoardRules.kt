@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.solo
+package fr.uge.wordrawid.screens.solo.board
 
 val boardActions = List(25) { index ->
     when (index) {

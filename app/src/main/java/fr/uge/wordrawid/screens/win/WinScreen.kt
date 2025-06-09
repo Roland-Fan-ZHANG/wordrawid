@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.solo
+package fr.uge.wordrawid.screens.win
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

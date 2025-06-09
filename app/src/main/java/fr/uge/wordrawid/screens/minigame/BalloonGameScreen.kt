@@ -23,12 +23,12 @@ import kotlin.math.absoluteValue
 @androidx.annotation.RequiresPermission(Manifest.permission.RECORD_AUDIO)
 fun BalloonGameScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
-    var balloonSize by remember { mutableStateOf(100f) }
+    var balloonSize by remember { mutableFloatStateOf(100f) }
     var isRecording by remember { mutableStateOf(false) }
     var gameEnded by remember { mutableStateOf(false) }
     val gameDurationMillis = 10000L
     var gameResult by remember { mutableStateOf(false) }
-    var timeLeft by remember { mutableStateOf((gameDurationMillis / 1000).toInt()) }
+    var timeLeft by remember { mutableIntStateOf((gameDurationMillis / 1000).toInt()) }
 
     val micPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -98,7 +98,7 @@ fun BalloonGameScreen(navController: NavController) {
     }
 }
 
-@androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
+@androidx.annotation.RequiresPermission(Manifest.permission.RECORD_AUDIO)
 fun startRecording(scope: CoroutineScope, onAmplitude: (Float) -> Unit) {
     scope.launch {
         val bufferSize = AudioRecord.getMinBufferSize(

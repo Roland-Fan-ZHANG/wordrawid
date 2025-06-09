@@ -1,5 +1,6 @@
-package fr.uge.wordrawid.screens.solo
+package fr.uge.wordrawid.screens.solo.player
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import fr.uge.wordrawid.R
 /**
  * Affiche le joueur avec une animation entre les cases
  */
+@SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun Player(position: Int) {
     val cellSize = 400.dp / 5

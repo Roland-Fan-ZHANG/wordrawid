@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.solo
+package fr.uge.wordrawid.screens.solo.dice
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*

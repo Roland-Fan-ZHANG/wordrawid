@@ -28,19 +28,19 @@ import kotlin.random.Random
 fun CompassGameScreen(navController: NavController) {
     val context = LocalContext.current
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
-    val rotation = remember { mutableStateOf(0f) }
-    val targetRotation = remember { mutableStateOf(Random.nextFloat() * 360f - 180f) }
-    val currentRound = remember { mutableStateOf(0) }
+    val rotation = remember { mutableFloatStateOf(0f) }
+    val targetRotation = remember { mutableFloatStateOf(Random.nextFloat() * 360f - 180f) }
+    val currentRound = remember { mutableIntStateOf(0) }
     val totalRounds = 4
     val goalReached = remember { mutableStateOf(false) }
-    val timer = remember { mutableStateOf(30) }
+    val timer = remember { mutableIntStateOf(30) }
 
     LaunchedEffect(Unit) {
-        while (timer.value > 0 && !goalReached.value) {
+        while (timer.intValue > 0 && !goalReached.value) {
             kotlinx.coroutines.delay(1000)
-            timer.value--
+            timer.intValue--
         }
-        if (timer.value <= 0 && !goalReached.value) {
+        if (timer.intValue <= 0 && !goalReached.value) {
             navController.previousBackStackEntry?.savedStateHandle?.set("minigameResult", false)
             navController.navigateUp()
         }
@@ -54,16 +54,16 @@ fun CompassGameScreen(navController: NavController) {
                     val y = event.values[1]
 
                     val azimuth = atan2(-x, y) * (180 / Math.PI).toFloat()
-                    rotation.value = azimuth
+                    rotation.floatValue = azimuth
 
-                    if (Math.abs(rotation.value - targetRotation.value) < 10f && !goalReached.value) {
-                        currentRound.value++
-                        if (currentRound.value >= totalRounds) {
+                    if (Math.abs(rotation.floatValue - targetRotation.floatValue) < 10f && !goalReached.value) {
+                        currentRound.intValue++
+                        if (currentRound.intValue >= totalRounds) {
                             goalReached.value = true
                             navController.previousBackStackEntry?.savedStateHandle?.set("minigameResult", true)
                             navController.navigateUp()
                         } else {
-                            targetRotation.value = Random.nextFloat() * 360f - 180f
+                            targetRotation.floatValue = Random.nextFloat() * 360f - 180f
                         }
                     }
                 }
@@ -87,16 +87,16 @@ fun CompassGameScreen(navController: NavController) {
                 contentDescription = "Compass",
                 modifier = Modifier
                     .size(300.dp)
-                    .graphicsLayer(rotationZ = rotation.value)
+                    .graphicsLayer(rotationZ = rotation.floatValue)
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Text("Rotation : ${rotation.value.roundToInt()}°", fontSize = 18.sp)
+            Text("Rotation : ${rotation.floatValue.roundToInt()}°", fontSize = 18.sp)
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Cible : ${targetRotation.value.roundToInt()}°", fontSize = 18.sp)
+            Text("Cible : ${targetRotation.floatValue.roundToInt()}°", fontSize = 18.sp)
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Progression : ${currentRound.value}/$totalRounds", fontSize = 18.sp)
+            Text("Progression : ${currentRound.intValue}/$totalRounds", fontSize = 18.sp)
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Temps restant : ${timer.value} s", fontSize = 18.sp)
+            Text("Temps restant : ${timer.intValue} s", fontSize = 18.sp)
         }
     }
 

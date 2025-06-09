@@ -16,7 +16,7 @@ import fr.uge.wordrawid.screens.multi.JoinGameScreen
 import fr.uge.wordrawid.screens.multi.LobbyScreen
 import fr.uge.wordrawid.screens.multi.MultiScreen
 import fr.uge.wordrawid.screens.solo.SoloScreen
-import fr.uge.wordrawid.screens.solo.WinScreen
+import fr.uge.wordrawid.screens.win.WinScreen
 
 @Composable
 @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)

@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.solo
+package fr.uge.wordrawid.screens.solo.board
 
 sealed class CaseAction {
     object MoveForward2 : CaseAction()
