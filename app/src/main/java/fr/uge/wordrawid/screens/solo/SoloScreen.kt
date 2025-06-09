@@ -42,36 +42,41 @@ fun SoloScreen(navController: NavController, viewModel: SoloViewModel = viewMode
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
+                Spacer(modifier = Modifier.height(50.dp))
+
                 BoardSection(
                     viewModel
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 DiceSection(
                     viewModel,
                     onRoll = { startRolling(viewModel, scope, navController) }
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = viewModel.currentActionText,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(4.dp)
-                )
-
-                Text(
-                    text = viewModel.gameMessage,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(4.dp)
-                )
             }
+
+            Text(
+                text = viewModel.currentActionText,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(4.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = viewModel.gameMessage,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(4.dp)
+            )
 
             GuessSection(
                 viewModel = viewModel,
                 onCheck = { checkGuess(viewModel) }
             )
+
+            Spacer(modifier = Modifier.height(50.dp))
         }
     }
 }
