@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import fr.uge.wordrawid.screens.menu.MenuScreen
+import fr.uge.wordrawid.screens.minigame.BalloonGameScreen
 import fr.uge.wordrawid.screens.minigame.CompassGameScreen
 import fr.uge.wordrawid.screens.multi.CreateGameScreen
 import fr.uge.wordrawid.screens.multi.GameScreen
@@ -18,6 +19,7 @@ import fr.uge.wordrawid.screens.solo.SoloScreen
 import fr.uge.wordrawid.screens.solo.WinScreen
 
 @Composable
+@androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
 fun AppNavGraph(
   navController: NavHostController = rememberNavController()
 ) {
@@ -46,6 +48,7 @@ fun AppNavGraph(
       GameScreen(gameId = gameId, navController = navController)
     }
     composable(Routes.COMPASS) { CompassGameScreen(navController) }
+    composable(Routes.BALLOON) { BalloonGameScreen(navController) }
     composable(Routes.WIN) { WinScreen(navController) }
   }
 }
