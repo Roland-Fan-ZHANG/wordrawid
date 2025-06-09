@@ -4,6 +4,7 @@ object Routes {
     const val MENU = "menu"
     const val SOLO = "solo"
     const val MULTI = "multi"
+    const val WIN = "win"
     const val COMPASS = "compass"
     const val CREATE_GAME = "create_game"
     const val JOIN_GAME = "join_game"

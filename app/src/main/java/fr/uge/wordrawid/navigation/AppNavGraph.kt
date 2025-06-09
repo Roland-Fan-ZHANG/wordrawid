@@ -15,6 +15,7 @@ import fr.uge.wordrawid.screens.multi.JoinGameScreen
 import fr.uge.wordrawid.screens.multi.LobbyScreen
 import fr.uge.wordrawid.screens.multi.MultiScreen
 import fr.uge.wordrawid.screens.solo.SoloScreen
+import fr.uge.wordrawid.screens.solo.WinScreen
 
 @Composable
 fun AppNavGraph(
@@ -22,7 +23,7 @@ fun AppNavGraph(
 ) {
   NavHost(navController = navController, startDestination = Routes.MENU) {
     composable(Routes.MENU) { MenuScreen(navController) }
-    composable(Routes.SOLO) { SoloScreen() }
+    composable(Routes.SOLO) { SoloScreen(navController) }
     composable(Routes.MULTI) { MultiScreen(navController) }
     composable(Routes.CREATE_GAME) { CreateGameScreen(navController) }
     composable(Routes.JOIN_GAME) { JoinGameScreen(navController) }
@@ -44,6 +45,7 @@ fun AppNavGraph(
       val gameId = backStackEntry.arguments?.getString("gameId")?.toLong() ?: return@composable
       GameScreen(gameId = gameId, navController = navController)
     }
-    composable(Routes.COMPASS) { CompassGameScreen() }
+    composable(Routes.COMPASS) { CompassGameScreen(navController) }
+    composable(Routes.WIN) { WinScreen(navController) }
   }
 }

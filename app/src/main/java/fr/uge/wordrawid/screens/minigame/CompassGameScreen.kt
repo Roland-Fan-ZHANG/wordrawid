@@ -9,6 +9,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,12 +19,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import fr.uge.wordrawid.R
 import kotlin.math.atan2
 import kotlin.math.roundToInt
 
 @Composable
-fun CompassGameScreen() {
+fun CompassGameScreen(navController: NavController) {
     val context = LocalContext.current
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
     val rotation = remember { mutableStateOf(0f) }
@@ -83,4 +85,8 @@ fun CompassGameScreen() {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
+
+//    Button(onClick = { navController.navigateUp() }) {
+//        Text("Retour au plateau")
+//    }
 }

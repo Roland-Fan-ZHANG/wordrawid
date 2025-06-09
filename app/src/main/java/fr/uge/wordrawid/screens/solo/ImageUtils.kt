@@ -16,11 +16,11 @@ import fr.uge.wordrawid.R
 @Composable
 fun RandomImage(modifier: Modifier = Modifier) {
     val images = listOf(
-        R.drawable.image1,
-        R.drawable.image2,
-        R.drawable.image3,
-        R.drawable.image4,
-        R.drawable.image5
+        R.drawable.pomme,
+        R.drawable.voiture,
+        R.drawable.maison,
+        R.drawable.imprimante,
+        R.drawable.chat
     )
     val randomImage = remember { images.random() }
     Image(
