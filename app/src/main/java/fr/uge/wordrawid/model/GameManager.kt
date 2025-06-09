@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 data class GameManager(
   val id: Long,
   val board: List<Cell>,
-  val finalWord: MysteryWord
+  val finalWord: MysteryWord,
+  val currentPlayerIndex: Int
 )
