@@ -1,15 +1,15 @@
-# Wordrawid: Jeu de plateau solo et mini-jeux
+# Wordrawid: Jeu de plateau solo et multi et mini-jeux
 
 ## Présentation Mode Solo
 
-Wordrawid est un jeu mobile de plateau solo, incluant des mini-jeux intégrés. Le joueur avance sur un plateau de 5x5 cases et effectue des actions spécifiques en fonction des cases.
+Le mode solo inclue des mini-jeux intégrés. Le joueur avance sur un plateau de 5x5 cases et effectue des actions spécifiques en fonction des cases.
 Il devine des mots à partir d'images et joue des mini-jeux pour débloquer les cases.
 
 ## Fonctionnalités principales
 
 * Plateau de jeu 5x5 avec cases numérotées et masquées.
 * Avancement sur le plateau en lançant un dé virtuel.
-* Actions variées sur les cases : avancer, reculer, mini-jeux, révéler une case, etc.
+* Actions variées sur les cases : avancer, reculer, mini-jeux, révéler une case et ne rien faire.
 * Mini-jeux :
 
     * **Balloon** : souffler dans le micro pour gonfler un ballon.
@@ -34,30 +34,30 @@ Il devine des mots à partir d'images et joue des mini-jeux pour débloquer les 
 * `BoardGrid.kt` : composant d'affichage des cases du plateau (masquées ou révélées).
 * `Player.kt` : composant d’affichage et d’animation de la position du joueur.
 * `BoardRules.kt` et `CaseAction.kt` : logique des actions associées aux cases.
-* `SoloScreenUI.kt` : agencement du plateau et des composants du jeu.
+* `SoloScreenUI.kt` : L'interface graphique du plateau et des composants du jeu.
 
 ### 4. **Mini-jeux**
 
 * `BalloonGameScreen.kt` : mini-jeu utilisant le micro pour gonfler un ballon.
-* `CompassGameScreen.kt` : mini-jeu utilisant l’accéléromètre pour orienter l’appareil.
+* `CompassGameScreen.kt` : mini-jeu utilisant l’accéléromètre pour orienter le téléphone.
 
 ### 5. **Utilitaires**
 
 * `DiceUtils.kt` : fonctions et composants liés au dé virtuel.
-* `ImagesEtMots.kt` et `ImageUtils.kt` : gestion des images et mots à deviner.
+* `ImagesEtMots.kt` et `ImageUtils.kt` : gestion des images et des mots à deviner.
 * `SoloScreenUtils.kt` : logique de jeu (actions, mini-jeux, mouvements).
-* `SoloViewModel.kt` : `ViewModel` qui gère l’état global du jeu.
+* `SoloViewModel.kt` : `ViewModel` qui gère l’état du jeu et les différents changements.
 
 ### 6. **Gestion des autorisations**
 
 * Permissions audio pour `BalloonGameScreen.kt`.
-* Gestion de l’orientation (portrait) pour le jeu et les mini-jeux.
+* Gestion de l’orientation (portrait) dans le mini-jeu boussole et sur le plateau.
 
 ## Développement et contribution
 
 ### Structure
 
-* Chaque fonctionnalité (écran, mini-jeu, composants) est isolée dans son propre fichier.
+* Chaque fonctionnalité (écran, mini-jeu, composants) est dans son propre fichier.
 * La navigation est centralisée (`AppNavGraph.kt`).
 * `SoloViewModel` gère l’état et les règles du plateau.
 
@@ -67,10 +67,10 @@ Il devine des mots à partir d'images et joue des mini-jeux pour débloquer les 
 
     1. Créer un nouvel écran mini-jeu avec `@Composable`.
     2. Ajouter une action correspondante dans `CaseAction.kt`.
-    3. Étendre la logique dans `handleAction` (`SoloScreenUtils.kt`).
+    3. Ajouter l'action dans `handleAction` dans `SoloScreenUtils.kt`.
     4. Ajouter un `composable` dans `AppNavGraph.kt` et la route dans `Routes.kt`.
 * **Ajouter des images/mots** :
-
+    * Ajouter l'image dans /res/drawable
     * Étendre la liste `imagesEtMots` dans `ImagesEtMots.kt`.
 
 ## Utilisation pour les joueurs
@@ -81,9 +81,11 @@ Il devine des mots à partir d'images et joue des mini-jeux pour débloquer les 
 4. Deviner le mot en utilisant la zone de saisie.
 5. Terminer la partie en devinant correctement le mot.
 
-## Présentation Mode Multi
+## Présentation Mode Multi 
 
-Le mode multijoueur de Wordrawid permet à plusieurs joueurs de rejoindre une partie partagée via un code de lobby, de se synchroniser en temps réel et de jouer ensemble autour des mêmes images et mots à deviner.
+On ne mentionnera que les fonctionnalités qui ont été implémentées à ce jour.
+
+Le mode multijoueur permet à plusieurs joueurs de rejoindre une partie partagée via un code de lobby, de se synchroniser en temps réel et de jouer ensemble autour des mêmes images et mots à deviner.
 
 ### Fonctionnalités principales
 
@@ -92,7 +94,7 @@ Le mode multijoueur de Wordrawid permet à plusieurs joueurs de rejoindre une pa
 - Communication en temps réel entre les joueurs (via STOMP/WebSocket).
 - Notifications visuelles (snackbar et notifications système) pour les événements importants (nouveau joueur, début de partie).
 - Gestion de l’état du jeu (lobby, démarrage, affichage des images de la partie).
-- Affichage dynamique de l’image à deviner une fois la partie commencée.
+- Affichage de l’image à deviner une fois la partie lancée.
 
 ### Écrans principaux
 
@@ -136,7 +138,7 @@ Le gestionnaire central de la communication est `StompClientManager.kt`, qui :
 - Gère l’arrivée des nouveaux joueurs, le lancement de la partie, et la réception des données du jeu.
 - Télécharge les images de la partie en arrière-plan puis navigue automatiquement vers l’écran de jeu.
 
-### Fichiers importants
+### Architecture
 
 - **StompClientManager.kt** :  
   - Gère toute la communication en temps réel.  
