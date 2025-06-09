@@ -20,14 +20,15 @@ import kotlinx.coroutines.*
 import kotlin.math.absoluteValue
 
 @Composable
-@androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
+@androidx.annotation.RequiresPermission(Manifest.permission.RECORD_AUDIO)
 fun BalloonGameScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
     var balloonSize by remember { mutableStateOf(100f) }
     var isRecording by remember { mutableStateOf(false) }
     var gameEnded by remember { mutableStateOf(false) }
-    val gameDurationMillis = 10000L // 10 s
+    val gameDurationMillis = 10000L
     var gameResult by remember { mutableStateOf(false) }
+    var timeLeft by remember { mutableStateOf((gameDurationMillis / 1000).toInt()) }
 
     // Demande la permission du micro
     val micPermissionLauncher = rememberLauncherForActivityResult(
@@ -50,7 +51,10 @@ fun BalloonGameScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-        delay(gameDurationMillis)
+        while (timeLeft > 0 && !gameEnded) {
+            delay(1000L)
+            timeLeft -= 1
+        }
         if (!gameEnded) {
             gameResult = false
             gameEnded = true
@@ -74,7 +78,10 @@ fun BalloonGameScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Souffle pour gonfler le ballon !", style = MaterialTheme.typography.titleLarge)
+        Text("Souffle pour gonfler le ballon !", style = MaterialTheme.typography.titleLarge)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("Temps restant : $timeLeft s", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
         Canvas(
@@ -89,14 +96,6 @@ fun BalloonGameScreen(navController: NavController) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-//        if (gameEnded) {
-//            if (gameResult) {
-//                Text("🎉 Bravo ! Le ballon a explosé !", style = MaterialTheme.typography.titleLarge)
-//            } else {
-//                Text("⏰ Temps écoulé… Réessaie !", style = MaterialTheme.typography.titleLarge)
-//            }
-//        }
     }
 }
 
@@ -125,7 +124,7 @@ fun startRecording(scope: CoroutineScope, onAmplitude: (Float) -> Unit) {
                 val read = audioRecord.read(buffer, 0, bufferSize)
                 if (read > 0) {
                     val max = buffer.take(read).maxOf { it.toInt().absoluteValue }
-                    onAmplitude(max / 32768f * 100) // Normalisé pour l’UI
+                    onAmplitude(max / 32768f * 100) // Normalisé
                 }
                 delay(50)
             }

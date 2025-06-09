@@ -33,7 +33,7 @@ fun CompassGameScreen(navController: NavController) {
     val currentRound = remember { mutableStateOf(0) }
     val totalRounds = 4
     val goalReached = remember { mutableStateOf(false) }
-    val timer = remember { mutableStateOf(30) }
+    val timer = remember { mutableStateOf(20) }
 
     LaunchedEffect(Unit) {
         while (timer.value > 0 && !goalReached.value) {
