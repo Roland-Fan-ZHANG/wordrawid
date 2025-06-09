@@ -119,7 +119,7 @@ Le mode multijoueur de Wordrawid permet à plusieurs joueurs de rejoindre une pa
 3. **Lobby**  
    Dans le lobby, les joueurs reçoivent en temps réel :
    - Les nouveaux joueurs qui rejoignent.
-   - La notification de démarrage de la partie (uniquement si c’est l’admin qui l’a déclenchée).  
+   - La notification de démarrage de la partie par l'admin.  
    L’admin a un bouton pour lancer la partie, ce qui envoie une requête HTTP `/api/lobby/start` et notifie tous les joueurs via WebSocket.
 
 4. **Démarrage de la partie**  
@@ -151,11 +151,11 @@ Le gestionnaire central de la communication est `StompClientManager.kt`, qui :
 - **Session.kt** :  
   - Représente l’état global de la partie : joueurs, plateau, etc.
 
-### Notifications et feedback
+### Notifications
 
 - **Snackbars** :  
-  - Affichent des messages contextuels (par ex. “Partie créée”, “Joueur a rejoint”).
+  - Affichent des messages contextuels (ex: “Partie créée”, “Joueur a rejoint”).
 
 - **Notifications système** :  
-  - Pour les événements majeurs (un joueur rejoint, début de la partie).
+  - Pour les événements majeurs (ex: un joueur rejoint, début de la partie).
 
