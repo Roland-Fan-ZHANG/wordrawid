@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.ui.screens.menu
+package fr.uge.wordrawid.screens.menu
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
