@@ -26,7 +26,7 @@ fun BalloonGameScreen(navController: NavController) {
     var balloonSize by remember { mutableFloatStateOf(100f) }
     var isRecording by remember { mutableStateOf(false) }
     var gameEnded by remember { mutableStateOf(false) }
-    val gameDurationMillis = 10000L
+    val gameDurationMillis = 5000L
     var gameResult by remember { mutableStateOf(false) }
     var timeLeft by remember { mutableIntStateOf((gameDurationMillis / 1000).toInt()) }
 

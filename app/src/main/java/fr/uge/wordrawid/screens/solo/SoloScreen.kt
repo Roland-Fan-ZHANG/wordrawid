@@ -29,7 +29,6 @@ fun SoloScreen(navController: NavController, viewModel: SoloViewModel = viewMode
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         maxWidth
-
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -41,7 +40,6 @@ fun SoloScreen(navController: NavController, viewModel: SoloViewModel = viewMode
                     .padding(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Spacer(modifier = Modifier.height(50.dp))
 
                 BoardSection(
@@ -54,7 +52,6 @@ fun SoloScreen(navController: NavController, viewModel: SoloViewModel = viewMode
                     viewModel,
                     onRoll = { startRolling(viewModel, scope, navController) }
                 )
-
             }
 
             Text(
