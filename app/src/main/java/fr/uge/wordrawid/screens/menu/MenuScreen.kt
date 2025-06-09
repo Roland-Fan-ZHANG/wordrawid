@@ -36,7 +36,5 @@ fun MenuScreen(navController: NavController) {
     Button(onClick = { navController.navigate(Routes.MULTI) }, modifier = Modifier.fillMaxWidth()) {
       Text("Multi")
     }
-
-    Spacer(modifier = Modifier.height(16.dp))
   }
 }

@@ -19,6 +19,18 @@ import kotlinx.coroutines.launch
 fun SoloScreen(navController: NavController, viewModel: SoloViewModel = viewModel()) {
     val scope = rememberCoroutineScope()
 
+    val navBackStackEntry = remember { navController.currentBackStackEntry }
+    val minigameResult = navBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("minigameResult")
+    minigameResult?.observe(navBackStackEntry) { result ->
+        if (result == true) {
+            viewModel.caseMasquee[viewModel.playerPosition] = false
+            viewModel.currentActionText = "Case révélée"
+        } else {
+            viewModel.currentActionText = "Mini-jeu échoué, la case est bloquée"
+        }
+        navBackStackEntry.savedStateHandle.remove<Boolean>("minigameResult")
+    }
+
     fun animateMovement(steps: Int, forward: Boolean = true) = scope.launch {
         repeat(steps) {
             viewModel.playerPosition = if (forward)
@@ -42,9 +54,7 @@ fun SoloScreen(navController: NavController, viewModel: SoloViewModel = viewMode
             is CaseAction.MoveForward2 -> animateMovement(2)
             is CaseAction.MoveBackward3 -> animateMovement(3, forward = false)
             is CaseAction.RevealTile -> viewModel.caseMasquee[viewModel.playerPosition] = false
-            is CaseAction.CompassMiniGame -> {
-                navController.navigate(Routes.COMPASS)
-            }
+            is CaseAction.CompassMiniGame -> navController.navigate(Routes.COMPASS)
             is CaseAction.Nothing -> {}
         }
     }

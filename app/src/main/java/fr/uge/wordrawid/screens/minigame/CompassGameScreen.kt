@@ -9,7 +9,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,15 +22,29 @@ import androidx.navigation.NavController
 import fr.uge.wordrawid.R
 import kotlin.math.atan2
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 @Composable
 fun CompassGameScreen(navController: NavController) {
     val context = LocalContext.current
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
     val rotation = remember { mutableStateOf(0f) }
-    val xVal = remember { mutableStateOf(0f) }
-    val yVal = remember { mutableStateOf(0f) }
-    val zVal = remember { mutableStateOf(0f) }
+    val targetRotation = remember { mutableStateOf(Random.nextFloat() * 360f - 180f) }
+    val currentRound = remember { mutableStateOf(0) }
+    val totalRounds = 4
+    val goalReached = remember { mutableStateOf(false) }
+    val timer = remember { mutableStateOf(30) }
+
+    LaunchedEffect(Unit) {
+        while (timer.value > 0 && !goalReached.value) {
+            kotlinx.coroutines.delay(1000)
+            timer.value--
+        }
+        if (timer.value <= 0 && !goalReached.value) {
+            navController.previousBackStackEntry?.savedStateHandle?.set("minigameResult", false)
+            navController.navigateUp()
+        }
+    }
 
     DisposableEffect(Unit) {
         val listener = object : SensorEventListener {
@@ -39,14 +52,20 @@ fun CompassGameScreen(navController: NavController) {
                 if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
                     val x = event.values[0]
                     val y = event.values[1]
-                    val z = event.values[2]
-
-                    xVal.value = x
-                    yVal.value = y
-                    zVal.value = z
 
                     val azimuth = atan2(-x, y) * (180 / Math.PI).toFloat()
                     rotation.value = azimuth
+
+                    if (Math.abs(rotation.value - targetRotation.value) < 10f && !goalReached.value) {
+                        currentRound.value++
+                        if (currentRound.value >= totalRounds) {
+                            goalReached.value = true
+                            navController.previousBackStackEntry?.savedStateHandle?.set("minigameResult", true)
+                            navController.navigateUp()
+                        } else {
+                            targetRotation.value = Random.nextFloat() * 360f - 180f
+                        }
+                    }
                 }
             }
 
@@ -71,8 +90,18 @@ fun CompassGameScreen(navController: NavController) {
                     .graphicsLayer(rotationZ = rotation.value)
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Text("X: ${xVal.value.roundToInt()}  Y: ${yVal.value.roundToInt()}  Z: ${zVal.value.roundToInt()}", fontSize = 18.sp)
-            Text("Rotation Z: ${rotation.value.roundToInt()}°", fontSize = 18.sp)
+            Text("Rotation : ${rotation.value.roundToInt()}°", fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Cible : ${targetRotation.value.roundToInt()}°", fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Progression : ${currentRound.value}/$totalRounds", fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Temps restant : ${timer.value} s", fontSize = 18.sp)
+
+            if (goalReached.value) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Bravo ! Vous avez réussi les $totalRounds rotations.", fontSize = 20.sp)
+            }
         }
     }
 
@@ -80,13 +109,4 @@ fun CompassGameScreen(navController: NavController) {
     LaunchedEffect(Unit) {
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     }
-    DisposableEffect(Unit) {
-        onDispose {
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        }
-    }
-
-//    Button(onClick = { navController.navigateUp() }) {
-//        Text("Retour au plateau")
-//    }
 }
