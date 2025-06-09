@@ -151,7 +151,7 @@ Le gestionnaire central de la communication est `StompClientManager.kt`, qui :
   - Modèles des messages WebSocket pour les communications.
 
 - **Session.kt** :  
-  - Représente l’état global de la partie : joueurs, plateau, etc.
+  - Représente l’état global de la partie : joueurs, plateau et image.
 
 ### Notifications
 
