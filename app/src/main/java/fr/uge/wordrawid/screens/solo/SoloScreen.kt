@@ -1,23 +1,41 @@
 package fr.uge.wordrawid.screens.solo
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import fr.uge.wordrawid.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun SoloScreen() {
+    val imagesEtMots = listOf(
+        R.drawable.image1 to "chat",
+        R.drawable.image2 to "chien",
+        R.drawable.image3 to "soleil",
+        R.drawable.image4 to "lune",
+        R.drawable.image5 to "arbre"
+    )
+    val (randomImageRes, motADeviner) = remember { imagesEtMots.random() }
+
     var finalResult by remember { mutableStateOf(1) }
     var displayResult by remember { mutableStateOf(1) }
     var rolling by remember { mutableStateOf(false) }
     var playerPosition by remember { mutableStateOf(0) }
     var currentActionText by remember { mutableStateOf("") }
     val caseMasquee = remember { mutableStateListOf(*Array(25) { true }) }
+    var guess by remember { mutableStateOf("") }
+    var gameMessage by remember { mutableStateOf("") }
+    var hasWon by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
 
@@ -63,7 +81,22 @@ fun SoloScreen() {
         }
     }
 
+    fun checkGuess() {
+        if (guess.trim().lowercase() == motADeviner.lowercase()) {
+            gameMessage = "Gagné !"
+            hasWon = true
+        } else {
+            gameMessage = "Raté !"
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
+        DiceWithImage(
+            displayResult = displayResult,
+            onRoll = { startRolling() },
+            rolling = rolling
+        )
+
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -75,19 +108,56 @@ fun SoloScreen() {
             )
 
             Box(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(bottom = 100.dp),
                 contentAlignment = Alignment.Center
             ) {
-                RandomImage()
+                androidx.compose.foundation.Image(
+                    painter = painterResource(id = randomImageRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(400.dp)
+                )
                 BoardGrid(caseMasquee)
                 Player(position = playerPosition)
             }
+
+            Spacer(modifier = Modifier.height(80.dp))
+
+            if (hasWon) {
+                //TODO : afficher la page de win
+            }
         }
 
-        DiceWithImage(
-            displayResult = displayResult,
-            onRoll = { startRolling() },
-            rolling = rolling
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = guess,
+                onValueChange = { guess = it },
+                label = { Text("Devine le mot") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                modifier = Modifier.weight(1f).padding(bottom = 20.dp)
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Button(onClick = { checkGuess() }) {
+                Text("Valider")
+            }
+        }
+
+        Text(
+            text = gameMessage,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 100.dp)
         )
     }
 }

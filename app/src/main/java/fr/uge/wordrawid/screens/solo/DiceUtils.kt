@@ -44,12 +44,12 @@ fun DiceImage(rollResult: Int, modifier: Modifier = Modifier) {
 fun DiceWithImage(
     displayResult: Int,
     onRoll: () -> Unit,
-    rolling: Boolean
+    rolling: Boolean,
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = 32.dp),  // espace avec le bas
+            .padding(bottom = 110.dp),
         contentAlignment = Alignment.BottomCenter
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
