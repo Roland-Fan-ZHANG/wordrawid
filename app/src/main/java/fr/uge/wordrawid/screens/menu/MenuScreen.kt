@@ -12,36 +12,31 @@ import fr.uge.wordrawid.navigation.Routes
 
 @Composable
 fun MenuScreen(navController: NavController) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Wordrawid",
-            fontSize = 32.sp,
-            style = MaterialTheme.typography.headlineMedium
-        )
+  Column(
+    modifier = Modifier
+      .fillMaxSize()
+      .padding(24.dp),
+    verticalArrangement = Arrangement.Center,
+    horizontalAlignment = Alignment.CenterHorizontally
+  ) {
+    Text(
+      text = "Wordrawid",
+      fontSize = 32.sp,
+      style = MaterialTheme.typography.headlineMedium
+    )
 
-        Spacer(modifier = Modifier.height(48.dp))
+    Spacer(modifier = Modifier.height(48.dp))
 
-        Button(onClick = { navController.navigate(Routes.SOLO) }, modifier = Modifier.fillMaxWidth()) {
-            Text("Solo")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = { navController.navigate(Routes.MULTI) }, modifier = Modifier.fillMaxWidth()) {
-            Text("Multi")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = { navController.navigate(Routes.COMPASS) }, modifier = Modifier.fillMaxWidth()) {
-            Text("Mini-jeu Boussole")
-        }
-
+    Button(onClick = { navController.navigate(Routes.SOLO) }, modifier = Modifier.fillMaxWidth()) {
+      Text("Solo")
     }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Button(onClick = { navController.navigate(Routes.MULTI) }, modifier = Modifier.fillMaxWidth()) {
+      Text("Multi")
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+  }
 }
