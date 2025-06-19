@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.solo.board
+package fr.uge.wordrawid.solo.board
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*

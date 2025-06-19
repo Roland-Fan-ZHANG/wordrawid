@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.multi
+package fr.uge.wordrawid.multi
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

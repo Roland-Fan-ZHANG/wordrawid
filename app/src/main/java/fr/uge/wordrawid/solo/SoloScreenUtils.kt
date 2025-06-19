@@ -1,10 +1,9 @@
-package fr.uge.wordrawid.screens.solo
+package fr.uge.wordrawid.solo
 
 import androidx.navigation.NavController
 import fr.uge.wordrawid.navigation.Routes
-import fr.uge.wordrawid.screens.solo.board.CaseAction
-import fr.uge.wordrawid.screens.solo.board.boardActions
-import fr.uge.wordrawid.screens.solo.dice.rollDice
+import fr.uge.wordrawid.solo.board.CaseAction
+import fr.uge.wordrawid.solo.board.boardActions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

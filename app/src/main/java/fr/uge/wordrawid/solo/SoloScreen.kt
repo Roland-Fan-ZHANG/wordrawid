@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.solo
+package fr.uge.wordrawid.solo
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState

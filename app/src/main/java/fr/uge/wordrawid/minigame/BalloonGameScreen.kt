@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.minigame
+package fr.uge.wordrawid.minigame
 
 import android.Manifest
 import android.media.AudioFormat

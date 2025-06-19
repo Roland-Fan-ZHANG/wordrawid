@@ -11,7 +11,7 @@ import androidx.core.app.ActivityCompat
 import dagger.hilt.android.AndroidEntryPoint
 import fr.uge.wordrawid.ui.theme.WordrawidTheme
 import fr.uge.wordrawid.navigation.AppNavGraph
-import fr.uge.wordrawid.screens.multi.StompClientManager
+import fr.uge.wordrawid.multi.StompClientManager
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

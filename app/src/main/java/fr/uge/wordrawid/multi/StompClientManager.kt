@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.multi
+package fr.uge.wordrawid.multi
 
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
@@ -116,7 +116,8 @@ object StompClientManager {
               val isSelf = data.player.id == currentPlayerId
               if (!players.any { it.id == data.player.id }) {
                 players.add(data.player)
-                Log.i(TAG, "👥 Nouvelle liste des joueurs (${players.size}) : " +
+                Log.i(
+                    TAG, "👥 Nouvelle liste des joueurs (${players.size}) : " +
                         players.joinToString { "${it.id}-${it.name}" })
               }
               if (isSelf) {

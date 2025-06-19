@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.solo
+package fr.uge.wordrawid.solo
 
 import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.mutableStateOf
@@ -6,7 +6,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
-import fr.uge.wordrawid.screens.solo.images.imagesEtMots
+import fr.uge.wordrawid.solo.board.imagesEtMots
 
 class SoloViewModel : ViewModel() {
     private val randomPair = imagesEtMots.random()

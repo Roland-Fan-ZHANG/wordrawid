@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.multi
+package fr.uge.wordrawid.multi
 
 import android.graphics.BitmapFactory
 import androidx.compose.runtime.*

@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.multi
+package fr.uge.wordrawid
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -11,7 +11,7 @@ import androidx.navigation.NavController
 import fr.uge.wordrawid.navigation.Routes
 
 @Composable
-fun MultiScreen(navController: NavController) {
+fun MenuScreen(navController: NavController) {
   Column(
     modifier = Modifier
       .fillMaxSize()
@@ -20,27 +20,21 @@ fun MultiScreen(navController: NavController) {
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
     Text(
-      text = "Multijoueur",
-      fontSize = 28.sp,
+      text = "Wordrawid",
+      fontSize = 32.sp,
       style = MaterialTheme.typography.headlineMedium
     )
 
     Spacer(modifier = Modifier.height(48.dp))
 
-    Button(
-      onClick = {navController.navigate(Routes.CREATE_GAME)},
-      modifier = Modifier.fillMaxWidth()
-    ) {
-      Text("Créer une partie")
+    Button(onClick = { navController.navigate(Routes.SOLO) }, modifier = Modifier.fillMaxWidth()) {
+      Text("Solo")
     }
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    Button(
-      onClick = { navController.navigate(Routes.JOIN_GAME) },
-      modifier = Modifier.fillMaxWidth()
-    ) {
-      Text("Rejoindre une partie avec un code")
+    Button(onClick = { navController.navigate(Routes.MULTI) }, modifier = Modifier.fillMaxWidth()) {
+      Text("Multi")
     }
   }
 }

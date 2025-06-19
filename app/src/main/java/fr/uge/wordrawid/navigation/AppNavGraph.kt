@@ -7,16 +7,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import fr.uge.wordrawid.screens.menu.MenuScreen
-import fr.uge.wordrawid.screens.minigame.BalloonGameScreen
-import fr.uge.wordrawid.screens.minigame.CompassGameScreen
-import fr.uge.wordrawid.screens.multi.CreateGameScreen
-import fr.uge.wordrawid.screens.multi.GameScreen
-import fr.uge.wordrawid.screens.multi.JoinGameScreen
-import fr.uge.wordrawid.screens.multi.LobbyScreen
-import fr.uge.wordrawid.screens.multi.MultiScreen
-import fr.uge.wordrawid.screens.solo.SoloScreen
-import fr.uge.wordrawid.screens.win.WinScreen
+import fr.uge.wordrawid.MenuScreen
+import fr.uge.wordrawid.minigame.BalloonGameScreen
+import fr.uge.wordrawid.minigame.CompassGameScreen
+import fr.uge.wordrawid.multi.CreateGameScreen
+import fr.uge.wordrawid.multi.GameScreen
+import fr.uge.wordrawid.multi.JoinGameScreen
+import fr.uge.wordrawid.multi.LobbyScreen
+import fr.uge.wordrawid.multi.MultiScreen
+import fr.uge.wordrawid.solo.SoloScreen
+import fr.uge.wordrawid.solo.WinScreen
 
 @Composable
 @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)

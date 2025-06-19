@@ -1,5 +1,6 @@
-package fr.uge.wordrawid.screens.minigame
+package fr.uge.wordrawid.minigame
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
@@ -20,10 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import fr.uge.wordrawid.R
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
+@SuppressLint("SourceLockedOrientationActivity")
 @Composable
 fun CompassGameScreen(navController: NavController) {
     val context = LocalContext.current
@@ -56,7 +59,7 @@ fun CompassGameScreen(navController: NavController) {
                     val azimuth = atan2(-x, y) * (180 / Math.PI).toFloat()
                     rotation.floatValue = azimuth
 
-                    if (Math.abs(rotation.floatValue - targetRotation.floatValue) < 10f && !goalReached.value) {
+                    if (abs(rotation.floatValue - targetRotation.floatValue) < 10f && !goalReached.value) {
                         currentRound.intValue++
                         if (currentRound.intValue >= totalRounds) {
                             goalReached.value = true

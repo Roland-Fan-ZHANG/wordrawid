@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.solo
+package fr.uge.wordrawid.solo
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -10,9 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import fr.uge.wordrawid.screens.solo.board.BoardGrid
-import fr.uge.wordrawid.screens.solo.player.Player
-import fr.uge.wordrawid.screens.solo.dice.DiceWithImage
+import fr.uge.wordrawid.solo.board.BoardGrid
+import fr.uge.wordrawid.solo.board.Player
 
 @Composable
 fun DiceSection(viewModel: SoloViewModel, onRoll: () -> Unit) {

@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.solo.images
+package fr.uge.wordrawid.solo.board
 
 import fr.uge.wordrawid.R
 

@@ -1,4 +1,4 @@
-package fr.uge.wordrawid.screens.solo.player
+package fr.uge.wordrawid.solo.board
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.animateDpAsState
