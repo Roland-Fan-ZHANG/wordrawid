@@ -8,5 +8,4 @@ enum class GameState {
   STARTING,
   RUNNING,
   FINISHED,
-  CANCELLED,
 }

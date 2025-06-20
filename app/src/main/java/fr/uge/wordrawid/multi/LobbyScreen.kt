@@ -5,7 +5,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import fr.uge.wordrawid.dto.http.DestroyGameRequest
+import fr.uge.wordrawid.dto.http.LeaveGameRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,6 +20,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import fr.uge.wordrawid.dto.http.StartGameRequest
 import fr.uge.wordrawid.model.Player
+import fr.uge.wordrawid.navigation.Routes
 
 private fun startGame(
   scope: CoroutineScope,
@@ -56,11 +61,89 @@ private fun startGame(
   }
 }
 
+private fun destroyGame(
+  scope: CoroutineScope,
+  snackbarHostState: SnackbarHostState,
+  gameId: Long,
+) {
+  scope.launch(Dispatchers.IO) {
+    try {
+      val url = URL("http://10.0.2.2:8080/api/lobby/destroy")
+      val connection = url.openConnection() as HttpURLConnection
+      connection.requestMethod = "POST"
+      connection.doOutput = true
+      connection.setRequestProperty("Content-Type", "application/json")
+
+      val request = DestroyGameRequest(sessionId = gameId)
+      val json = Json.encodeToString(request)
+
+      connection.outputStream.use { output ->
+        output.write(json.toByteArray(Charsets.UTF_8))
+      }
+
+      val code = connection.responseCode
+      withContext(Dispatchers.Main) {
+        if (code in 200..299) {
+          snackbarHostState.showSnackbar("Partie détruite avec succès")
+        } else {
+          snackbarHostState.showSnackbar("Erreur serveur : $code")
+        }
+      }
+    } catch (e: Exception) {
+      withContext(Dispatchers.Main) {
+        snackbarHostState.showSnackbar("Erreur : ${e.message}")
+      }
+    }
+  }
+}
+
+private fun leaveLobby(
+  scope: CoroutineScope,
+  snackbarHostState: SnackbarHostState,
+  navController: NavController,
+  gameId: Long,
+  playerId: Long,
+) {
+  scope.launch(Dispatchers.IO) {
+    try {
+      val url = URL("http://10.0.2.2:8080/api/lobby/leave")
+      val connection = url.openConnection() as HttpURLConnection
+      connection.requestMethod = "POST"
+      connection.doOutput = true
+      connection.setRequestProperty("Content-Type", "application/json")
+
+      val request = LeaveGameRequest(sessionId = gameId, playerId = playerId)
+      val json = Json.encodeToString(request)
+
+      connection.outputStream.use { output ->
+        output.write(json.toByteArray(Charsets.UTF_8))
+      }
+
+      val code = connection.responseCode
+      withContext(Dispatchers.Main) {
+        if (code in 200..299) {
+          snackbarHostState.showSnackbar("Vous avez quitté la partie")
+          StompClientManager.disconnect()
+          navController.navigate(Routes.MULTI)
+        } else {
+          snackbarHostState.showSnackbar("Erreur serveur : $code")
+        }
+      }
+    } catch (e: Exception) {
+      withContext(Dispatchers.Main) {
+        snackbarHostState.showSnackbar("Erreur : ${e.message}")
+      }
+    }
+  }
+}
+
+
 @Composable
 fun LobbyScreen(
   gameId: Long,
   joinCode: String,
-  isAdmin: Boolean
+  isAdmin: Boolean,
+  navController: NavController
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
   val secondarySnackbarHostState = remember { SnackbarHostState() }
@@ -137,6 +220,38 @@ fun LobbyScreen(
         ) {
           Text("Démarrer la partie")
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+          colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+          onClick = {
+            destroyGame(
+              scope = scope,
+              snackbarHostState = snackbarHostState,
+              gameId = gameId
+            )
+          }
+        ) {
+          Text("Quitter et détruire la partie", color = Color.White)
+        }
+      } else {
+        Button(
+          onClick = {
+            val playerId = StompClientManager.currentPlayerId
+            if (playerId != null) {
+              leaveLobby(scope, snackbarHostState, navController, gameId, playerId)
+            } else {
+              scope.launch {
+                snackbarHostState.showSnackbar("Impossible de quitter : ID joueur inconnu")
+              }
+            }
+          },
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+        ) {
+          Text("Quitter la partie")
+        }
+
       }
     }
   }

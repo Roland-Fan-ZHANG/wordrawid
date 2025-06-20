@@ -14,6 +14,7 @@ import fr.uge.wordrawid.dto.ws.LobbyMessage
 import fr.uge.wordrawid.dto.ws.LobbyMessageType
 import fr.uge.wordrawid.model.Session
 import fr.uge.wordrawid.model.Player
+import fr.uge.wordrawid.navigation.Routes
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.CoroutineScope
@@ -61,7 +62,7 @@ object StompClientManager {
   private var latestSession: Session? = null
   private var gameImageFile: File? = null
   val players = mutableStateListOf<Player>()
-  private var currentPlayerId: Long? = null
+  var currentPlayerId: Long? = null
 
   fun initialize(context: Context) {
     appContext = context.applicationContext
@@ -108,9 +109,7 @@ object StompClientManager {
         try {
           // 🔍 Log brut avant parsing
           Log.d(TAG, "🔎 Tentative de parse JSON en LobbyMessage")
-
           val data = Json.decodeFromString<LobbyMessage>(msg.payload)
-
           when (data.lobbyMessageType) {
             LobbyMessageType.JOIN -> {
               val isSelf = data.player.id == currentPlayerId
@@ -128,7 +127,6 @@ object StompClientManager {
                 showNotification(appContext, data.content)
               }
             }
-
             LobbyMessageType.START -> {
               val gameId = data.content.toLongOrNull()
               if (gameId != null) {
@@ -142,12 +140,18 @@ object StompClientManager {
                 Log.e(TAG, "❌ STARTED reçu avec content non convertible en Long : ${data.content}")
               }
             }
-
-            else -> Log.w(TAG, "⚠️ Notification inconnue ou non gérée : ${data.lobbyMessageType}")
+            LobbyMessageType.DESTROY -> {
+              Log.w(TAG, "🧨 Partie détruite par ${data.player.name}")
+              val message = "${data.player.name} a détruit la partie"
+              showNotification(appContext, message)
+              disconnect()
+              navController.navigate(Routes.MULTI)
+            }
+            LobbyMessageType.LEAVE -> TODO()
           }
 
         } catch (e: Exception) {
-          Log.e(TAG, "❌ Erreur de parsing STOMP", e)
+          Log.e(TAG, "❌ Erreur de parsing STOMP. Payload: ${msg.payload}", e)
         }
       }, { e ->
         Log.e(TAG, "💥 Erreur abonnement topic", e)
@@ -187,8 +191,12 @@ object StompClientManager {
 
 
   fun disconnect() {
-    disposables.clear()
     stompClient?.disconnect()
+    stompClient = null
+    players.clear()
+    currentPlayerId = -1
+    disposables.clear()
+    Log.d(TAG, "🔌 STOMP déconnecté et nettoyé")
   }
 }
 

@@ -40,7 +40,8 @@ fun AppNavGraph(
       LobbyScreen(
         gameId = it.arguments?.getLong("gameId") ?: 0L,
         joinCode = it.arguments?.getString("joinCode") ?: "",
-        isAdmin = it.arguments?.getBoolean("isAdmin") == true
+        isAdmin = it.arguments?.getBoolean("isAdmin") == true,
+        navController = navController
       )
     }
     composable(Routes.GAME) { backStackEntry ->
