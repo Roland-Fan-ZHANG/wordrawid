@@ -12,7 +12,7 @@ import androidx.navigation.NavController
 import fr.uge.wordrawid.dto.ws.GameMessage
 import fr.uge.wordrawid.dto.ws.LobbyMessage
 import fr.uge.wordrawid.dto.ws.LobbyMessageType
-import fr.uge.wordrawid.model.Session
+import fr.uge.wordrawid.model.Lobby
 import fr.uge.wordrawid.model.Player
 import fr.uge.wordrawid.navigation.Routes
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -59,7 +59,7 @@ object StompClientManager {
   private lateinit var appContext: Context
   private var stompClient: StompClient? = null
   private val disposables = CompositeDisposable()
-  private var latestSession: Session? = null
+  private var latestLobby: Lobby? = null
   private var gameImageFile: File? = null
   val players = mutableStateListOf<Player>()
   var currentPlayerId: Long? = null
@@ -182,16 +182,16 @@ object StompClientManager {
         Log.d(TAG, "📨 Message de jeu reçu: ${msg.payload}")
         try {
           val data = Json.decodeFromString<GameMessage>(msg.payload)
-          Log.i(TAG, "🎯 Données de jeu reçues pour gameId=${data.session.id}")
-          Log.i(TAG, "📋 Session: ${data.session}")
-          Log.i(TAG, "📋 Joueurs: ${data.session.players.joinToString { it.name }}")
-          Log.i(TAG, "📋 Plateau: ${data.session.gameManager.board.size} cases")
+          Log.i(TAG, "🎯 Données de jeu reçues pour gameId=${data.lobby.id}")
+          Log.i(TAG, "📋 Session: ${data.lobby}")
+          Log.i(TAG, "📋 Joueurs: ${data.lobby.players.joinToString { it.name }}")
+          Log.i(TAG, "📋 Plateau: ${data.lobby.gameManager.board.size} cases")
           Log.i(TAG, "📋 Image URL: ${data.imageUrl}")
 
-          downloadImage(appContext, data.imageUrl, data.session.id) { file ->
+          downloadImage(appContext, data.imageUrl, data.lobby.id) { file ->
             gameImageFile = file
-            latestSession = data.session
-            navController.navigate("game/${data.session.id}")
+            latestLobby = data.lobby
+            navController.navigate("game/${data.lobby.id}")
           }
         } catch (e: Exception) {
           Log.e(TAG, "❌ Erreur parsing GameMessage", e)

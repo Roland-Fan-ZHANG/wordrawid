@@ -11,8 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import fr.uge.wordrawid.dto.http.DestroyGameRequest
-import fr.uge.wordrawid.dto.http.LeaveGameRequest
+import fr.uge.wordrawid.dto.http.LeaveSessionRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -63,42 +62,6 @@ private fun startGame(
   }
 }
 
-private fun destroyGame(
-  scope: CoroutineScope,
-  snackbarHostState: SnackbarHostState,
-  gameId: Long,
-) {
-  scope.launch(Dispatchers.IO) {
-    try {
-      val url = URL("http://10.0.2.2:8080/api/lobby/destroy")
-      val connection = url.openConnection() as HttpURLConnection
-      connection.requestMethod = "POST"
-      connection.doOutput = true
-      connection.setRequestProperty("Content-Type", "application/json")
-
-      val request = DestroyGameRequest(sessionId = gameId)
-      val json = Json.encodeToString(request)
-
-      connection.outputStream.use { output ->
-        output.write(json.toByteArray(Charsets.UTF_8))
-      }
-
-      val code = connection.responseCode
-      withContext(Dispatchers.Main) {
-        if (code in 200..299) {
-          snackbarHostState.showSnackbar("Partie détruite avec succès")
-        } else {
-          snackbarHostState.showSnackbar("Erreur serveur : $code")
-        }
-      }
-    } catch (e: Exception) {
-      withContext(Dispatchers.Main) {
-        snackbarHostState.showSnackbar("Erreur : ${e.message}")
-      }
-    }
-  }
-}
-
 private fun leaveLobby(
   scope: CoroutineScope,
   snackbarHostState: SnackbarHostState,
@@ -113,7 +76,7 @@ private fun leaveLobby(
       connection.doOutput = true
       connection.setRequestProperty("Content-Type", "application/json")
 
-      val request = LeaveGameRequest(sessionId = gameId, playerId = playerId)
+      val request = LeaveSessionRequest(sessionId = gameId, playerId = playerId)
       val json = Json.encodeToString(request)
 
       connection.outputStream.use { output ->
@@ -230,19 +193,6 @@ fun LobbyScreen(
           ) {
             Text("Démarrer la partie")
           }
-          Spacer(modifier = Modifier.height(16.dp))
-          Button(
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-            onClick = {
-              destroyGame(
-                scope = scope,
-                snackbarHostState = snackbarHostState,
-                gameId = gameId
-              )
-            }
-          ) {
-            Text("Annuler la partie", color = Color.White)
-          }
         } else {
           Button(
             onClick = {
@@ -261,7 +211,6 @@ fun LobbyScreen(
           ) {
             Text("Quitter la partie")
           }
-
         }
       }
     }

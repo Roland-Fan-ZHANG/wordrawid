@@ -8,8 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import fr.uge.wordrawid.dto.http.JoinGameRequest
-import fr.uge.wordrawid.dto.http.JoinGameResponse
+import fr.uge.wordrawid.dto.http.JoinLobbyRequest
+import fr.uge.wordrawid.dto.http.JoinLobbyResponse
 import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -99,11 +99,11 @@ fun JoinGameScreen(navController: NavController) {
   }
 }
 
-private fun joinLobbyRequest(pseudo: String, joinCode: String): JoinGameResponse? {
+private fun joinLobbyRequest(pseudo: String, joinCode: String): JoinLobbyResponse? {
   return try {
     val url = URL("http://10.0.2.2:8080/api/lobby/join")
     val json = Json { ignoreUnknownKeys = true }
-    val jsonBody = json.encodeToString(JoinGameRequest(pseudo = pseudo, joinCode = joinCode))
+    val jsonBody = json.encodeToString(JoinLobbyRequest(pseudo = pseudo, joinCode = joinCode))
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "POST"
       doOutput = true
@@ -113,7 +113,7 @@ private fun joinLobbyRequest(pseudo: String, joinCode: String): JoinGameResponse
 
     if (connection.responseCode in 200..299) {
       val response = connection.inputStream.bufferedReader().readText()
-      json.decodeFromString<JoinGameResponse>(response)
+      json.decodeFromString<JoinLobbyResponse>(response)
     } else {
       Log.e("JoinGameScreen", "Erreur HTTP ${connection.responseCode}")
       null

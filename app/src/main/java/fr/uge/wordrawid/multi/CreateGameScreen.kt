@@ -8,8 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import fr.uge.wordrawid.dto.http.CreateGameRequest
-import fr.uge.wordrawid.dto.http.CreateGameResponse
+import fr.uge.wordrawid.dto.http.CreateLobbyRequest
+import fr.uge.wordrawid.dto.http.CreateLobbyResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -88,11 +88,11 @@ fun CreateGameScreen(navController: NavController) {
   }
 }
 
-private fun createLobbyRequest(pseudo: String): CreateGameResponse? {
+private fun createLobbyRequest(pseudo: String): CreateLobbyResponse? {
   return try {
     val url = URL("http://10.0.2.2:8080/api/lobby/create")
     val json = Json { ignoreUnknownKeys = true }
-    val jsonBody = json.encodeToString(CreateGameRequest(pseudo))
+    val jsonBody = json.encodeToString(CreateLobbyRequest(pseudo))
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "POST"
       doOutput = true
@@ -102,7 +102,7 @@ private fun createLobbyRequest(pseudo: String): CreateGameResponse? {
 
     if (connection.responseCode in 200..299) {
       val response = connection.inputStream.bufferedReader().readText()
-      json.decodeFromString<CreateGameResponse>(response)
+      json.decodeFromString<CreateLobbyResponse>(response)
     } else {
       Log.e("CreateGameScreen", "Erreur lors de la création de la partie : ${connection.responseCode}")
       null

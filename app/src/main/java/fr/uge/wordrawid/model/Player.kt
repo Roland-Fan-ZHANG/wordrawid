@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class Player(
   val id: Long,
   val name: String,
-  val position: Int
+  val position: Int,
 )
