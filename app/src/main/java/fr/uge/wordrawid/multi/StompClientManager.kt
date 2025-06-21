@@ -12,8 +12,8 @@ import androidx.navigation.NavController
 import fr.uge.wordrawid.dto.ws.GameMessage
 import fr.uge.wordrawid.dto.ws.LobbyMessage
 import fr.uge.wordrawid.dto.ws.LobbyMessageType
-import fr.uge.wordrawid.model.Lobby
 import fr.uge.wordrawid.model.Player
+import fr.uge.wordrawid.navigation.GameSharedViewModel
 import fr.uge.wordrawid.navigation.Routes
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -47,10 +47,10 @@ private fun showNotification(context: Context, title: String, message: String) {
 
 object StompClientManager {
   private const val TAG = "STOMP"
+  private lateinit var gameSharedViewModel: GameSharedViewModel
   private lateinit var appContext: Context
   private var stompClient: StompClient? = null
   private val disposables = CompositeDisposable()
-  private var latestLobby: Lobby? = null
   private var gameImageFile: File? = null
   val players = mutableStateListOf<Player>()
   var currentPlayerId: Long? = null
@@ -59,6 +59,10 @@ object StompClientManager {
 
   fun initialize(context: Context) {
     appContext = context.applicationContext
+  }
+
+  fun initViewModel(viewModel: GameSharedViewModel) {
+    gameSharedViewModel = viewModel
   }
 
   @SuppressLint("CheckResult")
@@ -95,10 +99,8 @@ object StompClientManager {
     val disposable = stompClient?.topic(topic)
       ?.observeOn(AndroidSchedulers.mainThread())
       ?.subscribe({ msg: StompMessage ->
-        Log.d(TAG, "📨 Message reçu: ${msg.payload}")
+        Log.d(TAG, "📨 Message Lobby reçu: ${msg.payload}")
         try {
-          // 🔍 Log brut avant parsing
-          Log.d(TAG, "🔎 Tentative de parse JSON en LobbyMessage")
           val data = Json.decodeFromString<LobbyMessage>(msg.payload)
           onLobbyMessageReceived?.invoke(data)
           val isSelf = data.player.id == currentPlayerId
@@ -106,15 +108,8 @@ object StompClientManager {
             LobbyMessageType.JOIN -> {
               if (!players.any { it.id == data.player.id }) {
                 players.add(data.player)
-                Log.i(
-                    TAG, "👥 Nouvelle liste des joueurs (${players.size}) : " +
-                        players.joinToString { "${it.id}-${it.name}" })
               }
-              if (isSelf) {
-                Log.d(TAG, "🟢 C’est moi, pas de notif standard")
-              } else {
-                Log.i(TAG, "🔔 Notification pour ${data.player.name}")
-                Log.d(TAG, "🔔 Affichage notif pour ${data.player.name} sur thread: ${Thread.currentThread().name}")
+              if (!isSelf) {
                 showNotification(appContext, "Nouveau joueur", data.content)
               }
             }
@@ -124,10 +119,10 @@ object StompClientManager {
                 val playerName = data.player.name
                 val message = "$playerName a démarré la partie dans le lobby n°$gameId"
                 Log.i(TAG, "🎮 STARTED reçu. Souscription à /topic/game/$gameId")
-                showNotification(appContext, "C'est PARTI !", message)
+                if (!isSelf) {
+                  showNotification(appContext, "C'est PARTI !", message)
+                }
                 subscribeToGame(gameId, navController)
-              } else {
-                Log.e(TAG, "❌ STARTED reçu avec content non convertible en Long : ${data.content}")
               }
             }
             LobbyMessageType.DESTROY -> {
@@ -147,8 +142,6 @@ object StompClientManager {
                 if (!isSelf) {
                   showNotification(appContext, "Départ", "${data.player.name} a quitté la partie")
                 }
-              } else {
-                Log.w(TAG, "⚠️ Joueur ${data.player.name} non trouvé dans la liste")
               }
               if (isSelf) {
                 Log.d(TAG, "🚪 Redirection car joueur courant a quitté")
@@ -176,14 +169,9 @@ object StompClientManager {
           val data = Json.decodeFromString<GameMessage>(msg.payload)
           onGameMessageReceived?.invoke(data)
           Log.i(TAG, "🎯 Données de jeu reçues pour gameId=${data.lobby.id}")
-          Log.i(TAG, "📋 Session: ${data.lobby}")
-          Log.i(TAG, "📋 Joueurs: ${data.lobby.players.joinToString { it.name }}")
-          Log.i(TAG, "📋 Plateau: ${data.lobby.gameManager.board.size} cases")
-          Log.i(TAG, "📋 Image URL: ${data.imageUrl}")
-
           downloadImage(appContext, data.imageUrl, data.lobby.id) { file ->
             gameImageFile = file
-            latestLobby = data.lobby
+            gameSharedViewModel.currentGameData = data.lobby
             navController.navigate("game/${data.lobby.id}")
           }
         } catch (e: Exception) {

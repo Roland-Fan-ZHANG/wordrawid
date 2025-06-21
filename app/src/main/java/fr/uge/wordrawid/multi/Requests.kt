@@ -8,7 +8,7 @@ import fr.uge.wordrawid.dto.http.CreateLobbyResponse
 import fr.uge.wordrawid.dto.http.DestroyLobbyRequest
 import fr.uge.wordrawid.dto.http.JoinLobbyRequest
 import fr.uge.wordrawid.dto.http.JoinLobbyResponse
-import fr.uge.wordrawid.dto.http.LeaveSessionRequest
+import fr.uge.wordrawid.dto.http.LeaveLobbyRequest
 import fr.uge.wordrawid.dto.http.StartGameRequest
 import fr.uge.wordrawid.model.Player
 import kotlinx.coroutines.CoroutineScope
@@ -21,29 +21,64 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 
-fun createLobby(pseudo: String): CreateLobbyResponse? {
+inline fun <reified Req, reified Res> postHttpRequestWithResponse(
+  urlString: String,
+  body: Req,
+  logTag: String = "HTTP",
+): Res? {
   return try {
-    val url = URL("http://10.0.2.2:8080/api/lobby/create")
+    val url = URL(urlString)
+    val connection = url.openConnection() as HttpURLConnection
     val json = Json { ignoreUnknownKeys = true }
-    val jsonBody = json.encodeToString(CreateLobbyRequest(pseudo))
-    val connection = (url.openConnection() as HttpURLConnection).apply {
+    val jsonBody = json.encodeToString(body)
+    connection.apply {
       requestMethod = "POST"
       doOutput = true
       setRequestProperty("Content-Type", "application/json")
-      outputStream.write(jsonBody.toByteArray())
+      outputStream.write(jsonBody.toByteArray(Charsets.UTF_8))
     }
-
-    if (connection.responseCode in 200..299) {
-      val response = connection.inputStream.bufferedReader().readText()
-      json.decodeFromString<CreateLobbyResponse>(response)
+    val responseCode = connection.responseCode
+    if (responseCode in 200..299) {
+      val responseText = connection.inputStream.bufferedReader().readText()
+      json.decodeFromString(responseText)
     } else {
-      Log.e("CreateGameScreen", "Erreur lors de la création de la partie : ${connection.responseCode}")
+      Log.e(logTag, "Erreur HTTP $responseCode")
       null
     }
   } catch (e: Exception) {
-    Log.e("CreateGameScreen", "Erreur lors de la création de la partie", e)
+    Log.e(logTag, "Exception HTTP", e)
     null
   }
+}
+
+inline fun <reified Req> postHttpRequestNoResponse(
+  urlString: String,
+  body: Req,
+  logTag: String = "HTTP"
+): Int {
+  return try {
+    val url = URL(urlString)
+    val connection = url.openConnection() as HttpURLConnection
+    val json = Json.encodeToString(body)
+    connection.apply {
+      requestMethod = "POST"
+      doOutput = true
+      setRequestProperty("Content-Type", "application/json")
+      outputStream.write(json.toByteArray(Charsets.UTF_8))
+    }
+    connection.responseCode
+  } catch (e: Exception) {
+    Log.e(logTag, "Exception HTTP", e)
+    -1
+  }
+}
+
+fun createLobby(pseudo: String): CreateLobbyResponse? {
+  return postHttpRequestWithResponse(
+    urlString = "http://10.0.2.2:8080/api/lobby/create",
+    body = CreateLobbyRequest(pseudo),
+    logTag = "CreateGameScreen"
+  )
 }
 
 fun destroyLobby(
@@ -52,59 +87,26 @@ fun destroyLobby(
   gameId: Long,
 ) {
   scope.launch(Dispatchers.IO) {
-    try {
-      val url = URL("http://10.0.2.2:8080/api/lobby/destroy")
-      val connection = url.openConnection() as HttpURLConnection
-      connection.requestMethod = "POST"
-      connection.doOutput = true
-      connection.setRequestProperty("Content-Type", "application/json")
-
-      val request = DestroyLobbyRequest(sessionId = gameId)
-      val json = Json.encodeToString(request)
-
-      connection.outputStream.use { output ->
-        output.write(json.toByteArray(Charsets.UTF_8))
-      }
-
-      val code = connection.responseCode
-      withContext(Dispatchers.Main) {
-        if (code in 200..299) {
-          snackbarHostState.showSnackbar("Partie détruite avec succès")
-        } else {
-          snackbarHostState.showSnackbar("Erreur serveur : $code")
-        }
-      }
-    } catch (e: Exception) {
-      withContext(Dispatchers.Main) {
-        snackbarHostState.showSnackbar("Erreur : ${e.message}")
-      }
+    val code = postHttpRequestNoResponse(
+      urlString = "http://10.0.2.2:8080/api/lobby/destroy",
+      body = DestroyLobbyRequest(sessionId = gameId),
+      logTag = "DestroyLobby"
+    )
+    withContext(Dispatchers.Main) {
+      snackbarHostState.showSnackbar(
+        if (code in 200..299) "Partie détruite avec succès"
+        else "Erreur serveur : $code"
+      )
     }
   }
 }
 
 fun joinLobby(pseudo: String, joinCode: String): JoinLobbyResponse? {
-  return try {
-    val url = URL("http://10.0.2.2:8080/api/lobby/join")
-    val json = Json { ignoreUnknownKeys = true }
-    val jsonBody = json.encodeToString(JoinLobbyRequest(pseudo = pseudo, joinCode = joinCode))
-    val connection = (url.openConnection() as HttpURLConnection).apply {
-      requestMethod = "POST"
-      doOutput = true
-      setRequestProperty("Content-Type", "application/json")
-      outputStream.write(jsonBody.toByteArray())
-    }
-
-    if (connection.responseCode in 200..299) {
-      val response = connection.inputStream.bufferedReader().readText()
-      json.decodeFromString<JoinLobbyResponse>(response)
-    } else {
-      Log.e("JoinGameScreen", "Erreur HTTP ${connection.responseCode}")
-      null
-    }
-  } catch (e: Exception) {
-    Log.e("JoinGameScreen", "Erreur lors de la requête de join", e)
-    null
-  }
+  return postHttpRequestWithResponse(
+    urlString = "http://10.0.2.2:8080/api/lobby/join",
+    body = JoinLobbyRequest(pseudo, joinCode),
+    logTag = "JoinGameScreen"
+  )
 }
 
 fun leaveLobby(
@@ -114,32 +116,16 @@ fun leaveLobby(
   playerId: Long,
 ) {
   scope.launch(Dispatchers.IO) {
-    try {
-      val url = URL("http://10.0.2.2:8080/api/lobby/leave")
-      val connection = url.openConnection() as HttpURLConnection
-      connection.requestMethod = "POST"
-      connection.doOutput = true
-      connection.setRequestProperty("Content-Type", "application/json")
-
-      val request = LeaveSessionRequest(sessionId = gameId, playerId = playerId)
-      val json = Json.encodeToString(request)
-
-      connection.outputStream.use { output ->
-        output.write(json.toByteArray(Charsets.UTF_8))
-      }
-
-      val code = connection.responseCode
-      withContext(Dispatchers.Main) {
-        if (code in 200..299) {
-          snackbarHostState.showSnackbar("Vous avez quitté la partie")
-        } else {
-          snackbarHostState.showSnackbar("Erreur serveur : $code")
-        }
-      }
-    } catch (e: Exception) {
-      withContext(Dispatchers.Main) {
-        snackbarHostState.showSnackbar("Erreur : ${e.message}")
-      }
+    val code = postHttpRequestNoResponse(
+      urlString = "http://10.0.2.2:8080/api/lobby/leave",
+      body = LeaveLobbyRequest(sessionId = gameId, playerId = playerId),
+      logTag = "LeaveLobby"
+    )
+    withContext(Dispatchers.Main) {
+      snackbarHostState.showSnackbar(
+        if (code in 200..299) "Partie quittée avec succès"
+        else "Erreur serveur : $code"
+      )
     }
   }
 }
@@ -148,37 +134,19 @@ fun startGame(
   scope: CoroutineScope,
   snackbarHostState: SnackbarHostState,
   admin: Player,
-  gameId: Long
+  gameId: Long,
 ) {
   scope.launch(Dispatchers.IO) {
-    val requestBody = StartGameRequest(admin, gameId)
-    val jsonBody = Json.encodeToString(requestBody)
-
-    val url = URL("http://10.0.2.2:8080/api/lobby/start")
-    val connection = url.openConnection() as HttpURLConnection
-    try {
-      connection.requestMethod = "POST"
-      connection.setRequestProperty("Content-Type", "application/json")
-      connection.doOutput = true
-      connection.outputStream.use {
-        it.write(jsonBody.toByteArray())
-      }
-
-      val code = connection.responseCode
-      val message = if (code in 200..299) {
-        "Partie démarrée avec succès"
-      } else {
-        "Erreur serveur : $code"
-      }
-      withContext(Dispatchers.Main) {
-        snackbarHostState.showSnackbar(message)
-      }
-    } catch (e: Exception) {
-      withContext(Dispatchers.Main) {
-        snackbarHostState.showSnackbar("Erreur : ${e.message}")
-      }
-    } finally {
-      connection.disconnect()
+    val code = postHttpRequestNoResponse(
+      urlString = "http://10.0.2.2:8080/api/lobby/start",
+      body = StartGameRequest(gameId = gameId, admin = admin),
+      logTag = "LeaveLobby"
+    )
+    withContext(Dispatchers.Main) {
+      snackbarHostState.showSnackbar(
+        if (code in 200..299) "Partie démarrée avec succès"
+        else "Erreur serveur : $code"
+      )
     }
   }
 }
