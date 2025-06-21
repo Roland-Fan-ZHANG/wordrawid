@@ -1,9 +1,6 @@
 package fr.uge.wordrawid.multi
 
 import android.util.Log
-import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,136 +11,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import fr.uge.wordrawid.dto.http.DestroyLobbyRequest
-import fr.uge.wordrawid.dto.http.LeaveSessionRequest
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.net.HttpURLConnection
-import java.net.URL
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import fr.uge.wordrawid.dto.http.StartGameRequest
 import fr.uge.wordrawid.dto.ws.GameMessage
 import fr.uge.wordrawid.dto.ws.LobbyMessage
 import fr.uge.wordrawid.dto.ws.LobbyMessageType
-import fr.uge.wordrawid.model.Player
+import fr.uge.wordrawid.navigation.LoadingScreen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
-private fun startGame(
-  scope: CoroutineScope,
-  snackbarHostState: SnackbarHostState,
-  admin: Player,
-  gameId: Long
-) {
-  scope.launch(Dispatchers.IO) {
-    val requestBody = StartGameRequest(admin, gameId)
-    val jsonBody = Json.encodeToString(requestBody)
-
-    val url = URL("http://10.0.2.2:8080/api/lobby/start")
-    val connection = url.openConnection() as HttpURLConnection
-    try {
-      connection.requestMethod = "POST"
-      connection.setRequestProperty("Content-Type", "application/json")
-      connection.doOutput = true
-      connection.outputStream.use {
-        it.write(jsonBody.toByteArray())
-      }
-
-      val code = connection.responseCode
-      val message = if (code in 200..299) {
-        "Partie démarrée avec succès"
-      } else {
-        "Erreur serveur : $code"
-      }
-      withContext(Dispatchers.Main) {
-        snackbarHostState.showSnackbar(message)
-      }
-    } catch (e: Exception) {
-      withContext(Dispatchers.Main) {
-        snackbarHostState.showSnackbar("Erreur : ${e.message}")
-      }
-    } finally {
-      connection.disconnect()
-    }
-  }
-}
-
-private fun destroyGame(
-  scope: CoroutineScope,
-  snackbarHostState: SnackbarHostState,
-  gameId: Long,
-) {
-  scope.launch(Dispatchers.IO) {
-    try {
-      val url = URL("http://10.0.2.2:8080/api/lobby/destroy")
-      val connection = url.openConnection() as HttpURLConnection
-      connection.requestMethod = "POST"
-      connection.doOutput = true
-      connection.setRequestProperty("Content-Type", "application/json")
-
-      val request = DestroyLobbyRequest(sessionId = gameId)
-      val json = Json.encodeToString(request)
-
-      connection.outputStream.use { output ->
-        output.write(json.toByteArray(Charsets.UTF_8))
-      }
-
-      val code = connection.responseCode
-      withContext(Dispatchers.Main) {
-        if (code in 200..299) {
-          snackbarHostState.showSnackbar("Partie détruite avec succès")
-        } else {
-          snackbarHostState.showSnackbar("Erreur serveur : $code")
-        }
-      }
-    } catch (e: Exception) {
-      withContext(Dispatchers.Main) {
-        snackbarHostState.showSnackbar("Erreur : ${e.message}")
-      }
-    }
-  }
-}
-
-private fun leaveLobby(
-  scope: CoroutineScope,
-  snackbarHostState: SnackbarHostState,
-  gameId: Long,
-  playerId: Long,
-) {
-  scope.launch(Dispatchers.IO) {
-    try {
-      val url = URL("http://10.0.2.2:8080/api/lobby/leave")
-      val connection = url.openConnection() as HttpURLConnection
-      connection.requestMethod = "POST"
-      connection.doOutput = true
-      connection.setRequestProperty("Content-Type", "application/json")
-
-      val request = LeaveSessionRequest(sessionId = gameId, playerId = playerId)
-      val json = Json.encodeToString(request)
-
-      connection.outputStream.use { output ->
-        output.write(json.toByteArray(Charsets.UTF_8))
-      }
-
-      val code = connection.responseCode
-      withContext(Dispatchers.Main) {
-        if (code in 200..299) {
-          snackbarHostState.showSnackbar("Vous avez quitté la partie")
-        } else {
-          snackbarHostState.showSnackbar("Erreur serveur : $code")
-        }
-      }
-    } catch (e: Exception) {
-      withContext(Dispatchers.Main) {
-        snackbarHostState.showSnackbar("Erreur : ${e.message}")
-      }
-    }
-  }
-}
 
 @Composable
 fun LobbyScreen(
@@ -157,11 +32,9 @@ fun LobbyScreen(
   val players = StompClientManager.players
   val viewModel: LobbyViewModel = viewModel()
   val isLoadingGameStart by viewModel.isLoadingGameStart.collectAsState()
-
   StompClientManager.onLobbyMessageReceived = { lobbyMessage ->
     viewModel.onLobbyMessage(lobbyMessage)
   }
-
   StompClientManager.onGameMessageReceived = { gameMessage ->
     viewModel.onGameMessage(gameMessage)
   }
@@ -252,7 +125,7 @@ fun LobbyScreen(
           Button(
             colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
             onClick = {
-              destroyGame(
+              destroyLobby(
                 scope = scope,
                 snackbarHostState = snackbarHostState,
                 gameId = gameId
@@ -282,28 +155,9 @@ fun LobbyScreen(
         }
       }
     }
+
     if (isLoadingGameStart) {
       LoadingScreen()
-    }
-  }
-}
-
-@Composable
-fun LoadingScreen() {
-  BackHandler {
-    // Ne rien faire = bloque le retour arrière
-  }
-  Box(
-    modifier = Modifier
-      .fillMaxSize()
-      .background(Color.White)
-      .clickable(enabled = true, onClick = {}), // <-- bloque tous les clics
-    contentAlignment = Alignment.Center
-  ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-      CircularProgressIndicator()
-      Spacer(modifier = Modifier.height(8.dp))
-      Text("Chargement...")
     }
   }
 }

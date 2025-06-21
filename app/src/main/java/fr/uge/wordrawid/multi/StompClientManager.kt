@@ -17,18 +17,12 @@ import fr.uge.wordrawid.model.Player
 import fr.uge.wordrawid.navigation.Routes
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.LifecycleEvent
 import ua.naiksoftware.stomp.dto.StompMessage
 import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
 import kotlin.random.Random
 
 private fun showNotification(context: Context, title: String, message: String) {
@@ -36,21 +30,18 @@ private fun showNotification(context: Context, title: String, message: String) {
   val channelId = "lobby_channel"
   val channelName = "Notifications du lobby"
   val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
     val channel = NotificationChannel(
       channelId, channelName, NotificationManager.IMPORTANCE_HIGH
     )
     notificationManager.createNotificationChannel(channel)
   }
-
   val notification = NotificationCompat.Builder(context, channelId)
     .setSmallIcon(android.R.drawable.ic_dialog_info) // Remplace par ton icône si besoin
     .setContentTitle(title)
     .setContentText(message)
     .setAutoCancel(true)
     .build()
-
   notificationManager.notify(Random.nextInt(), notification)
 }
 
@@ -76,7 +67,6 @@ object StompClientManager {
     stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, wsUrl)
     currentPlayerId = playerId.toLong()
     Log.d(TAG, "🧠 Joueur courant ID = $playerId")
-
     stompClient?.lifecycle()
       ?.observeOn(AndroidSchedulers.mainThread())
       ?.subscribe({ lifecycleEvent ->
@@ -96,7 +86,6 @@ object StompClientManager {
       }, { e ->
         Log.e(TAG, "💥 Erreur lifecycle STOMP", e)
       })
-
     stompClient?.connect()
   }
 
@@ -107,7 +96,6 @@ object StompClientManager {
       ?.observeOn(AndroidSchedulers.mainThread())
       ?.subscribe({ msg: StompMessage ->
         Log.d(TAG, "📨 Message reçu: ${msg.payload}")
-
         try {
           // 🔍 Log brut avant parsing
           Log.d(TAG, "🔎 Tentative de parse JSON en LobbyMessage")
@@ -175,7 +163,6 @@ object StompClientManager {
       }, { e ->
         Log.e(TAG, "💥 Erreur abonnement topic", e)
       })
-
     disposable?.let { disposables.add(it) }
   }
 
@@ -209,7 +196,6 @@ object StompClientManager {
     disposable?.let { disposables.add(it) }
   }
 
-
   private fun disconnect() {
     stompClient?.disconnect()
     stompClient = null
@@ -217,28 +203,5 @@ object StompClientManager {
     currentPlayerId = -1
     disposables.clear()
     Log.d(TAG, "🔌 STOMP déconnecté et nettoyé")
-  }
-}
-
-private fun downloadImage(context: Context, imageUrl: String, gameId: Long, onDownloaded: (File) -> Unit) {
-  CoroutineScope(Dispatchers.IO).launch {
-    try {
-      val url = URL("http://10.0.2.2:8080$imageUrl")
-      Log.i("imageUrl", imageUrl)
-      val connection = url.openConnection() as HttpURLConnection
-      connection.requestMethod = "GET"
-
-      val inputStream = connection.inputStream
-      val file = File(context.cacheDir, "image_$gameId.jpg")
-      file.outputStream().use { outputStream ->
-        inputStream.copyTo(outputStream)
-      }
-
-      withContext(Dispatchers.Main) {
-        onDownloaded(file)
-      }
-    } catch (e: Exception) {
-      Log.e("ImageDownload", "Erreur téléchargement image", e)
-    }
   }
 }

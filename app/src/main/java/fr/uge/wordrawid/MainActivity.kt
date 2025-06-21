@@ -15,7 +15,6 @@ import fr.uge.wordrawid.multi.StompClientManager
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
   @SuppressLint("SourceLockedOrientationActivity")
   @androidx.annotation.RequiresPermission(Manifest.permission.RECORD_AUDIO)
   override fun onCreate(savedInstanceState: Bundle?) {
