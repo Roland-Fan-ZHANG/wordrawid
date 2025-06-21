@@ -10,7 +10,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import fr.uge.wordrawid.dto.http.DestroyLobbyRequest
 import fr.uge.wordrawid.dto.http.LeaveSessionRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +25,13 @@ import java.net.URL
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import fr.uge.wordrawid.dto.http.StartGameRequest
+import fr.uge.wordrawid.dto.ws.GameMessage
+import fr.uge.wordrawid.dto.ws.LobbyMessage
+import fr.uge.wordrawid.dto.ws.LobbyMessageType
 import fr.uge.wordrawid.model.Player
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 private fun startGame(
   scope: CoroutineScope,
@@ -58,6 +68,42 @@ private fun startGame(
       }
     } finally {
       connection.disconnect()
+    }
+  }
+}
+
+private fun destroyGame(
+  scope: CoroutineScope,
+  snackbarHostState: SnackbarHostState,
+  gameId: Long,
+) {
+  scope.launch(Dispatchers.IO) {
+    try {
+      val url = URL("http://10.0.2.2:8080/api/lobby/destroy")
+      val connection = url.openConnection() as HttpURLConnection
+      connection.requestMethod = "POST"
+      connection.doOutput = true
+      connection.setRequestProperty("Content-Type", "application/json")
+
+      val request = DestroyLobbyRequest(sessionId = gameId)
+      val json = Json.encodeToString(request)
+
+      connection.outputStream.use { output ->
+        output.write(json.toByteArray(Charsets.UTF_8))
+      }
+
+      val code = connection.responseCode
+      withContext(Dispatchers.Main) {
+        if (code in 200..299) {
+          snackbarHostState.showSnackbar("Partie détruite avec succès")
+        } else {
+          snackbarHostState.showSnackbar("Erreur serveur : $code")
+        }
+      }
+    } catch (e: Exception) {
+      withContext(Dispatchers.Main) {
+        snackbarHostState.showSnackbar("Erreur : ${e.message}")
+      }
     }
   }
 }
@@ -99,7 +145,6 @@ private fun leaveLobby(
   }
 }
 
-
 @Composable
 fun LobbyScreen(
   gameId: Long,
@@ -110,6 +155,16 @@ fun LobbyScreen(
   val secondarySnackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
   val players = StompClientManager.players
+  val viewModel: LobbyViewModel = viewModel()
+  val isLoadingGameStart by viewModel.isLoadingGameStart.collectAsState()
+
+  StompClientManager.onLobbyMessageReceived = { lobbyMessage ->
+    viewModel.onLobbyMessage(lobbyMessage)
+  }
+
+  StompClientManager.onGameMessageReceived = { gameMessage ->
+    viewModel.onGameMessage(gameMessage)
+  }
 
   Box(modifier = Modifier.fillMaxSize()) {
     if (isAdmin) {
@@ -140,7 +195,7 @@ fun LobbyScreen(
                 Text(
                   it.visuals.message,
                   modifier = Modifier.fillMaxWidth(),
-                  textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                  textAlign = TextAlign.Center
                 )
               }
             }
@@ -153,7 +208,7 @@ fun LobbyScreen(
                 Text(
                   it.visuals.message,
                   modifier = Modifier.fillMaxWidth(),
-                  textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                  textAlign = TextAlign.Center
                 )
               }
             }
@@ -193,6 +248,19 @@ fun LobbyScreen(
           ) {
             Text("Démarrer la partie")
           }
+          Spacer(modifier = Modifier.height(16.dp))
+          Button(
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+            onClick = {
+              destroyGame(
+                scope = scope,
+                snackbarHostState = snackbarHostState,
+                gameId = gameId
+              )
+            }
+          ) {
+            Text("Détruire la partie MWAHAHA", color = Color.White)
+          }
         } else {
           Button(
             onClick = {
@@ -214,6 +282,9 @@ fun LobbyScreen(
         }
       }
     }
+    if (isLoadingGameStart) {
+      LoadingScreen()
+    }
   }
 }
 
@@ -234,5 +305,21 @@ fun LoadingScreen() {
       Spacer(modifier = Modifier.height(8.dp))
       Text("Chargement...")
     }
+  }
+}
+
+class LobbyViewModel : ViewModel() {
+  private val _isLoadingGameStart = MutableStateFlow(false)
+  val isLoadingGameStart: StateFlow<Boolean> = _isLoadingGameStart.asStateFlow()
+
+  fun onLobbyMessage(message: LobbyMessage) {
+    if (message.lobbyMessageType == LobbyMessageType.START) {
+      _isLoadingGameStart.value = true
+    }
+  }
+
+  fun onGameMessage(message: GameMessage) {
+    _isLoadingGameStart.value = false
+    Log.i("LobbyViewModel", "Partie démarrée avec succès : $message")
   }
 }

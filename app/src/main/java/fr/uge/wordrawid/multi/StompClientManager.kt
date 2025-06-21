@@ -63,6 +63,8 @@ object StompClientManager {
   private var gameImageFile: File? = null
   val players = mutableStateListOf<Player>()
   var currentPlayerId: Long? = null
+  var onLobbyMessageReceived: ((LobbyMessage) -> Unit)? = null
+  var onGameMessageReceived: ((GameMessage) -> Unit)? = null
 
   fun initialize(context: Context) {
     appContext = context.applicationContext
@@ -110,6 +112,7 @@ object StompClientManager {
           // 🔍 Log brut avant parsing
           Log.d(TAG, "🔎 Tentative de parse JSON en LobbyMessage")
           val data = Json.decodeFromString<LobbyMessage>(msg.payload)
+          onLobbyMessageReceived?.invoke(data)
           val isSelf = data.player.id == currentPlayerId
           when (data.lobbyMessageType) {
             LobbyMessageType.JOIN -> {
@@ -142,7 +145,9 @@ object StompClientManager {
             LobbyMessageType.DESTROY -> {
               Log.w(TAG, "🧨 Partie détruite par ${data.player.name}")
               val message = "${data.player.name} a détruit la partie"
-              showNotification(appContext, "Partie annulée",  message)
+              if (!isSelf) {
+                showNotification(appContext, "Partie annulée",  message)
+              }
               disconnect()
               navController.navigate(Routes.MULTI)
             }
@@ -182,6 +187,7 @@ object StompClientManager {
         Log.d(TAG, "📨 Message de jeu reçu: ${msg.payload}")
         try {
           val data = Json.decodeFromString<GameMessage>(msg.payload)
+          onGameMessageReceived?.invoke(data)
           Log.i(TAG, "🎯 Données de jeu reçues pour gameId=${data.lobby.id}")
           Log.i(TAG, "📋 Session: ${data.lobby}")
           Log.i(TAG, "📋 Joueurs: ${data.lobby.players.joinToString { it.name }}")
@@ -204,7 +210,7 @@ object StompClientManager {
   }
 
 
-  fun disconnect() {
+  private fun disconnect() {
     stompClient?.disconnect()
     stompClient = null
     players.clear()
