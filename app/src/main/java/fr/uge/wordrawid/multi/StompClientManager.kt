@@ -31,7 +31,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.random.Random
 
-private fun showNotification(context: Context, message: String) {
+private fun showNotification(context: Context, title: String, message: String) {
   Log.i("NOTIF", "📣 showNotification: $message")
   val channelId = "lobby_channel"
   val channelName = "Notifications du lobby"
@@ -46,7 +46,7 @@ private fun showNotification(context: Context, message: String) {
 
   val notification = NotificationCompat.Builder(context, channelId)
     .setSmallIcon(android.R.drawable.ic_dialog_info) // Remplace par ton icône si besoin
-    .setContentTitle("Nouveau joueur")
+    .setContentTitle(title)
     .setContentText(message)
     .setAutoCancel(true)
     .build()
@@ -110,9 +110,9 @@ object StompClientManager {
           // 🔍 Log brut avant parsing
           Log.d(TAG, "🔎 Tentative de parse JSON en LobbyMessage")
           val data = Json.decodeFromString<LobbyMessage>(msg.payload)
+          val isSelf = data.player.id == currentPlayerId
           when (data.lobbyMessageType) {
             LobbyMessageType.JOIN -> {
-              val isSelf = data.player.id == currentPlayerId
               if (!players.any { it.id == data.player.id }) {
                 players.add(data.player)
                 Log.i(
@@ -124,7 +124,7 @@ object StompClientManager {
               } else {
                 Log.i(TAG, "🔔 Notification pour ${data.player.name}")
                 Log.d(TAG, "🔔 Affichage notif pour ${data.player.name} sur thread: ${Thread.currentThread().name}")
-                showNotification(appContext, data.content)
+                showNotification(appContext, "Nouveau joueur", data.content)
               }
             }
             LobbyMessageType.START -> {
@@ -132,9 +132,8 @@ object StompClientManager {
               if (gameId != null) {
                 val playerName = data.player.name
                 val message = "$playerName a démarré la partie dans le lobby n°$gameId"
-
                 Log.i(TAG, "🎮 STARTED reçu. Souscription à /topic/game/$gameId")
-                showNotification(appContext, message)
+                showNotification(appContext, "C'est PARTI !", message)
                 subscribeToGame(gameId, navController)
               } else {
                 Log.e(TAG, "❌ STARTED reçu avec content non convertible en Long : ${data.content}")
@@ -143,13 +142,28 @@ object StompClientManager {
             LobbyMessageType.DESTROY -> {
               Log.w(TAG, "🧨 Partie détruite par ${data.player.name}")
               val message = "${data.player.name} a détruit la partie"
-              showNotification(appContext, message)
+              showNotification(appContext, "Partie annulée",  message)
               disconnect()
               navController.navigate(Routes.MULTI)
             }
-            LobbyMessageType.LEAVE -> TODO()
+            LobbyMessageType.LEAVE -> {
+              Log.i(TAG, "👋 ${data.player.name} a quitté le lobby")
+              val toRemove = players.find { it.id == data.player.id }
+              if (toRemove != null) {
+                players.remove(toRemove)
+                if (!isSelf) {
+                  showNotification(appContext, "Départ", "${data.player.name} a quitté la partie")
+                }
+              } else {
+                Log.w(TAG, "⚠️ Joueur ${data.player.name} non trouvé dans la liste")
+              }
+              if (isSelf) {
+                Log.d(TAG, "🚪 Redirection car joueur courant a quitté")
+                disconnect()
+                navController.navigate(Routes.MULTI)
+              }
+            }
           }
-
         } catch (e: Exception) {
           Log.e(TAG, "❌ Erreur de parsing STOMP. Payload: ${msg.payload}", e)
         }

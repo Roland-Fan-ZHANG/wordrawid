@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 enum class GameState {
   WAITING_FOR_PLAYERS,
-  STARTING,
   RUNNING,
   FINISHED,
 }

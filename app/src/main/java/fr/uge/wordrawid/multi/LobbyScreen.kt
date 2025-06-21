@@ -1,5 +1,9 @@
 package fr.uge.wordrawid.multi
 
+import android.util.Log
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -7,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import fr.uge.wordrawid.dto.http.DestroyGameRequest
 import fr.uge.wordrawid.dto.http.LeaveGameRequest
 import kotlinx.coroutines.CoroutineScope
@@ -20,7 +23,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import fr.uge.wordrawid.dto.http.StartGameRequest
 import fr.uge.wordrawid.model.Player
-import fr.uge.wordrawid.navigation.Routes
 
 private fun startGame(
   scope: CoroutineScope,
@@ -100,7 +102,6 @@ private fun destroyGame(
 private fun leaveLobby(
   scope: CoroutineScope,
   snackbarHostState: SnackbarHostState,
-  navController: NavController,
   gameId: Long,
   playerId: Long,
 ) {
@@ -123,8 +124,6 @@ private fun leaveLobby(
       withContext(Dispatchers.Main) {
         if (code in 200..299) {
           snackbarHostState.showSnackbar("Vous avez quitté la partie")
-          StompClientManager.disconnect()
-          navController.navigate(Routes.MULTI)
         } else {
           snackbarHostState.showSnackbar("Erreur serveur : $code")
         }
@@ -143,116 +142,148 @@ fun LobbyScreen(
   gameId: Long,
   joinCode: String,
   isAdmin: Boolean,
-  navController: NavController
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
   val secondarySnackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
   val players = StompClientManager.players
 
-  if (isAdmin) {
-    LaunchedEffect(Unit) {
-      scope.launch { snackbarHostState.showSnackbar("Tu es l’administrateur de la partie") }
-      scope.launch { secondarySnackbarHostState.showSnackbar("Partie créée avec succès") }
+  Box(modifier = Modifier.fillMaxSize()) {
+    if (isAdmin) {
+      LaunchedEffect(Unit) {
+        scope.launch {
+          snackbarHostState.showSnackbar("Tu es l’administrateur de la partie")
+          secondarySnackbarHostState.showSnackbar("Partie créée avec succès")
+        }
+      }
+    } else {
+      LaunchedEffect(Unit) {
+        scope.launch { secondarySnackbarHostState.showSnackbar("Tu as rejoint la partie : $joinCode") }
+      }
     }
-  } else {
-    LaunchedEffect(Unit) {
-      scope.launch { secondarySnackbarHostState.showSnackbar("Tu as rejoint la partie : $joinCode") }
-    }
-  }
 
-  Scaffold(
-    snackbarHost = {},
-    bottomBar = {
-      Column(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-      ) {
-        SnackbarHost(
-          hostState = secondarySnackbarHostState,
-          modifier = Modifier.fillMaxWidth(0.9f).padding(bottom = 8.dp),
-          snackbar = { Snackbar {
-            Text(
-              it.visuals.message,
-              modifier = Modifier.fillMaxWidth(),
-              textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-          } }
-        )
-        SnackbarHost(
-          hostState = snackbarHostState,
-          modifier = Modifier.fillMaxWidth(0.9f),
-          snackbar = { Snackbar {
-            Text(
-              it.visuals.message,
-              modifier = Modifier.fillMaxWidth(),
-              textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-          } }
-        )
-      }
-    }
-  ) { padding ->
-    Column(
-      modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp),
-      verticalArrangement = Arrangement.Top,
-      horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-      Text("Code de la partie : $joinCode", style = MaterialTheme.typography.headlineMedium)
-      Spacer(modifier = Modifier.height(24.dp))
-      Text("Joueurs :", style = MaterialTheme.typography.titleMedium)
-      Spacer(modifier = Modifier.height(12.dp))
-      players.forEach { player ->
-        Text("• ${player.id} - ${player.name}")
-      }
-      if (isAdmin) {
-        val admin = StompClientManager.players.first()
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(
-          onClick = {
-            startGame(
-              scope = scope,
-              snackbarHostState = snackbarHostState,
-              admin = admin,
-              gameId = gameId
-            )
-          }
+    Scaffold(
+      snackbarHost = {},
+      bottomBar = {
+        Column(
+          modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+          horizontalAlignment = Alignment.CenterHorizontally
         ) {
-          Text("Démarrer la partie")
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-          colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-          onClick = {
-            destroyGame(
-              scope = scope,
-              snackbarHostState = snackbarHostState,
-              gameId = gameId
-            )
-          }
-        ) {
-          Text("Quitter et détruire la partie", color = Color.White)
-        }
-      } else {
-        Button(
-          onClick = {
-            val playerId = StompClientManager.currentPlayerId
-            if (playerId != null) {
-              leaveLobby(scope, snackbarHostState, navController, gameId, playerId)
-            } else {
-              scope.launch {
-                snackbarHostState.showSnackbar("Impossible de quitter : ID joueur inconnu")
+          SnackbarHost(
+            hostState = secondarySnackbarHostState,
+            modifier = Modifier.fillMaxWidth(0.9f).padding(bottom = 8.dp),
+            snackbar = {
+              Snackbar {
+                Text(
+                  it.visuals.message,
+                  modifier = Modifier.fillMaxWidth(),
+                  textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
               }
             }
-          },
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-        ) {
-          Text("Quitter la partie")
+          )
+          SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.fillMaxWidth(0.9f),
+            snackbar = {
+              Snackbar {
+                Text(
+                  it.visuals.message,
+                  modifier = Modifier.fillMaxWidth(),
+                  textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+              }
+            }
+          )
         }
-
       }
+    ) { padding ->
+      Column(
+        modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+      ) {
+        Text("Code de la partie : $joinCode", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("Joueurs :", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(12.dp))
+        players.forEach { player ->
+          Text("• ${player.id} - ${player.name}")
+        }
+        if (isAdmin) {
+          val admin = StompClientManager.players.firstOrNull()
+          if (admin == null) {
+            Log.w("LobbyScreen", "Aucun joueur trouvé – affichage écran de chargement")
+            LoadingScreen()
+            return@Column
+          }
+          Spacer(modifier = Modifier.height(32.dp))
+          Button(
+            onClick = {
+              startGame(
+                scope = scope,
+                snackbarHostState = snackbarHostState,
+                admin = admin,
+                gameId = gameId
+              )
+            }
+          ) {
+            Text("Démarrer la partie")
+          }
+          Spacer(modifier = Modifier.height(16.dp))
+          Button(
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+            onClick = {
+              destroyGame(
+                scope = scope,
+                snackbarHostState = snackbarHostState,
+                gameId = gameId
+              )
+            }
+          ) {
+            Text("Annuler la partie", color = Color.White)
+          }
+        } else {
+          Button(
+            onClick = {
+              val playerId = StompClientManager.currentPlayerId
+              if (playerId != null) {
+                leaveLobby(scope, snackbarHostState, gameId, playerId)
+              } else {
+                scope.launch {
+                  snackbarHostState.showSnackbar("Impossible de quitter : ID joueur inconnu")
+                }
+              }
+            },
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(16.dp)
+          ) {
+            Text("Quitter la partie")
+          }
+
+        }
+      }
+    }
+  }
+}
+
+@Composable
+fun LoadingScreen() {
+  BackHandler {
+    // Ne rien faire = bloque le retour arrière
+  }
+  Box(
+    modifier = Modifier
+      .fillMaxSize()
+      .background(Color.White)
+      .clickable(enabled = true, onClick = {}), // <-- bloque tous les clics
+    contentAlignment = Alignment.Center
+  ) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+      CircularProgressIndicator()
+      Spacer(modifier = Modifier.height(8.dp))
+      Text("Chargement...")
     }
   }
 }
