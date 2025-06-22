@@ -1,5 +1,6 @@
-package fr.uge.wordrawid.ui.screens.minigame
+package fr.uge.wordrawid.minigame
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
@@ -18,18 +19,35 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import fr.uge.wordrawid.R
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
+@SuppressLint("SourceLockedOrientationActivity")
 @Composable
-fun CompassGameScreen() {
+fun CompassGameScreen(navController: NavController) {
     val context = LocalContext.current
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
-    val rotation = remember { mutableStateOf(0f) }
-    val xVal = remember { mutableStateOf(0f) }
-    val yVal = remember { mutableStateOf(0f) }
-    val zVal = remember { mutableStateOf(0f) }
+    val rotation = remember { mutableFloatStateOf(0f) }
+    val targetRotation = remember { mutableFloatStateOf(Random.nextFloat() * 360f - 180f) }
+    val currentRound = remember { mutableIntStateOf(0) }
+    val totalRounds = 4
+    val goalReached = remember { mutableStateOf(false) }
+    val timer = remember { mutableIntStateOf(30) }
+
+    LaunchedEffect(Unit) {
+        while (timer.intValue > 0 && !goalReached.value) {
+            kotlinx.coroutines.delay(1000)
+            timer.intValue--
+        }
+        if (timer.intValue <= 0 && !goalReached.value) {
+            navController.previousBackStackEntry?.savedStateHandle?.set("minigameResult", false)
+            navController.navigateUp()
+        }
+    }
 
     DisposableEffect(Unit) {
         val listener = object : SensorEventListener {
@@ -37,14 +55,20 @@ fun CompassGameScreen() {
                 if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
                     val x = event.values[0]
                     val y = event.values[1]
-                    val z = event.values[2]
-
-                    xVal.value = x
-                    yVal.value = y
-                    zVal.value = z
 
                     val azimuth = atan2(-x, y) * (180 / Math.PI).toFloat()
-                    rotation.value = azimuth
+                    rotation.floatValue = azimuth
+
+                    if (abs(rotation.floatValue - targetRotation.floatValue) < 10f && !goalReached.value) {
+                        currentRound.intValue++
+                        if (currentRound.intValue >= totalRounds) {
+                            goalReached.value = true
+                            navController.previousBackStackEntry?.savedStateHandle?.set("minigameResult", true)
+                            navController.navigateUp()
+                        } else {
+                            targetRotation.floatValue = Random.nextFloat() * 360f - 180f
+                        }
+                    }
                 }
             }
 
@@ -66,21 +90,21 @@ fun CompassGameScreen() {
                 contentDescription = "Compass",
                 modifier = Modifier
                     .size(300.dp)
-                    .graphicsLayer(rotationZ = rotation.value)
+                    .graphicsLayer(rotationZ = rotation.floatValue)
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Text("X: ${xVal.value.roundToInt()}  Y: ${yVal.value.roundToInt()}  Z: ${zVal.value.roundToInt()}", fontSize = 18.sp)
-            Text("Rotation Z: ${rotation.value.roundToInt()}°", fontSize = 18.sp)
+            Text("Rotation : ${rotation.floatValue.roundToInt()}°", fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Cible : ${targetRotation.floatValue.roundToInt()}°", fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Progression : ${currentRound.intValue}/$totalRounds", fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Temps restant : ${timer.intValue} s", fontSize = 18.sp)
         }
     }
 
     val activity = LocalContext.current as? Activity
     LaunchedEffect(Unit) {
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-    }
-    DisposableEffect(Unit) {
-        onDispose {
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        }
     }
 }
