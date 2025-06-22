@@ -1,6 +1,8 @@
 package fr.uge.wordrawid.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -15,14 +17,21 @@ import fr.uge.wordrawid.multi.GameScreen
 import fr.uge.wordrawid.multi.JoinGameScreen
 import fr.uge.wordrawid.multi.LobbyScreen
 import fr.uge.wordrawid.multi.MultiScreen
+import fr.uge.wordrawid.multi.MultiViewModel
+import fr.uge.wordrawid.multi.StompClientManager
 import fr.uge.wordrawid.solo.SoloScreen
 import fr.uge.wordrawid.solo.WinScreen
 
 @Composable
 @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
 fun AppNavGraph(
-  navController: NavHostController = rememberNavController()
+  navController: NavHostController = rememberNavController(),
 ) {
+  val multiViewModel: MultiViewModel = viewModel()
+  LaunchedEffect(Unit) {
+    StompClientManager.initViewModel(multiViewModel)
+  }
+
   NavHost(navController = navController, startDestination = Routes.MENU) {
     composable(Routes.MENU) { MenuScreen(navController) }
     composable(Routes.SOLO) { SoloScreen(navController) }
@@ -40,12 +49,15 @@ fun AppNavGraph(
       LobbyScreen(
         gameId = it.arguments?.getLong("gameId") ?: 0L,
         joinCode = it.arguments?.getString("joinCode") ?: "",
-        isAdmin = it.arguments?.getBoolean("isAdmin") == true
+        isAdmin = it.arguments?.getBoolean("isAdmin") == true,
       )
     }
-    composable(Routes.GAME) { backStackEntry ->
-      val gameId = backStackEntry.arguments?.getString("gameId")?.toLong() ?: return@composable
-      GameScreen(gameId = gameId, navController = navController)
+    composable(
+      route = Routes.GAME,
+      arguments = listOf(navArgument("gameId") { type = NavType.LongType })
+    ) { backStackEntry ->
+      val gameId = backStackEntry.arguments?.getLong("gameId") ?: return@composable
+      GameScreen(gameId = gameId, navController = navController, multiViewModel = multiViewModel)
     }
     composable(Routes.COMPASS) { CompassGameScreen(navController) }
     composable(Routes.BALLOON) { BalloonGameScreen(navController) }

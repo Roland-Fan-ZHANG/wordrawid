@@ -15,24 +15,23 @@ import fr.uge.wordrawid.multi.StompClientManager
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @SuppressLint("SourceLockedOrientationActivity")
-    @androidx.annotation.RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        super.onCreate(savedInstanceState)
-        StompClientManager.initialize(applicationContext)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                1
-            )
-        }
-        setContent {
-            WordrawidTheme {
-                AppNavGraph()
-            }
-        }
+  @SuppressLint("SourceLockedOrientationActivity")
+  @androidx.annotation.RequiresPermission(Manifest.permission.RECORD_AUDIO)
+  override fun onCreate(savedInstanceState: Bundle?) {
+    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    super.onCreate(savedInstanceState)
+    StompClientManager.initialize(applicationContext)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      ActivityCompat.requestPermissions(
+        this,
+        arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+        1
+      )
     }
+    setContent {
+      WordrawidTheme {
+        AppNavGraph()
+      }
+    }
+  }
 }

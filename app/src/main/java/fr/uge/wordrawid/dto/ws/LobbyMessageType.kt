@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class LobbyMessageType {
-  JOIN, LEAVE, START
+  JOIN, LEAVE, START, DESTROY
 }

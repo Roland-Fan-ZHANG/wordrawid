@@ -3,8 +3,10 @@ package fr.uge.wordrawid.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Player(
-  val id: Long,
-  val name: String,
-  val position: Int,
-)
+enum class CellType {
+  NEUTRAL,
+  MINIGAME1,
+  MINIGAME2,
+  BONUS,
+  MALUS,
+}

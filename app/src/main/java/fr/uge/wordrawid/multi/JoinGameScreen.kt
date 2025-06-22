@@ -8,13 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import fr.uge.wordrawid.dto.http.JoinGameRequest
-import fr.uge.wordrawid.dto.http.JoinGameResponse
+import fr.uge.wordrawid.navigation.LoadingScreen
 import kotlinx.coroutines.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import java.net.HttpURLConnection
-import java.net.URL
 
 @Composable
 fun JoinGameScreen(navController: NavController) {
@@ -32,27 +27,21 @@ fun JoinGameScreen(navController: NavController) {
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
     Text("Rejoindre une partie", style = MaterialTheme.typography.headlineMedium)
-
     Spacer(modifier = Modifier.height(32.dp))
-
     OutlinedTextField(
       value = pseudo,
       onValueChange = { pseudo = it },
       label = { Text("Votre pseudo") },
       modifier = Modifier.fillMaxWidth()
     )
-
     Spacer(modifier = Modifier.height(16.dp))
-
     OutlinedTextField(
       value = joinCode,
       onValueChange = { joinCode = it },
       label = { Text("Code de la partie") },
       modifier = Modifier.fillMaxWidth()
     )
-
     Spacer(modifier = Modifier.height(24.dp))
-
     Button(
       onClick = {
         if (!isFormValid) {
@@ -63,7 +52,7 @@ fun JoinGameScreen(navController: NavController) {
         responseMessage = null
         CoroutineScope(Dispatchers.IO).launch {
           Log.i("JoinGameScreen", "Pseudo = $pseudo ; Joincode = $joinCode")
-          val result = joinLobbyRequest(pseudo = pseudo, joinCode = joinCode)
+          val result = joinLobby(pseudo = pseudo, joinCode = joinCode)
           withContext(Dispatchers.Main) {
             isLoading = false
             if (result != null) {
@@ -75,7 +64,7 @@ fun JoinGameScreen(navController: NavController) {
                     result.player.id.toString(),
                     navController
                 )
-              navController.navigate("lobby/${result.gameId}?joinCode=${result.joinCode}&isAdmin=false")
+              navController.navigate("lobby/${result.lobbyId}?joinCode=${result.joinCode}&isAdmin=false")
             } else {
               responseMessage = "Erreur lors de la tentative de connexion. Vérifiez les infos."
             }
@@ -87,39 +76,13 @@ fun JoinGameScreen(navController: NavController) {
     ) {
       Text("Rejoindre la partie")
     }
-
     Spacer(modifier = Modifier.height(16.dp))
 
     if (isLoading) {
-      CircularProgressIndicator()
+      LoadingScreen()
     }
     responseMessage?.let {
       Text(it, modifier = Modifier.padding(top = 16.dp), color = MaterialTheme.colorScheme.error)
     }
-  }
-}
-
-private fun joinLobbyRequest(pseudo: String, joinCode: String): JoinGameResponse? {
-  return try {
-    val url = URL("http://10.0.2.2:8080/api/lobby/join")
-    val json = Json { ignoreUnknownKeys = true }
-    val jsonBody = json.encodeToString(JoinGameRequest(pseudo = pseudo, joinCode = joinCode))
-    val connection = (url.openConnection() as HttpURLConnection).apply {
-      requestMethod = "POST"
-      doOutput = true
-      setRequestProperty("Content-Type", "application/json")
-      outputStream.write(jsonBody.toByteArray())
-    }
-
-    if (connection.responseCode in 200..299) {
-      val response = connection.inputStream.bufferedReader().readText()
-      json.decodeFromString<JoinGameResponse>(response)
-    } else {
-      Log.e("JoinGameScreen", "Erreur HTTP ${connection.responseCode}")
-      null
-    }
-  } catch (e: Exception) {
-    Log.e("JoinGameScreen", "Erreur lors de la requête de join", e)
-    null
   }
 }

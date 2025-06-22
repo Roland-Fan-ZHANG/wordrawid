@@ -3,7 +3,4 @@ package fr.uge.wordrawid.dto.http
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RollDiceRequest(
-  val lobbyId: Long,
-  val playerId: Long
-)
+data class JoinLobbyRequest(val pseudo: String, val joinCode: String)

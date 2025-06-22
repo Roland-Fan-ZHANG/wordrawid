@@ -24,15 +24,11 @@ fun MenuScreen(navController: NavController) {
       fontSize = 32.sp,
       style = MaterialTheme.typography.headlineMedium
     )
-
     Spacer(modifier = Modifier.height(48.dp))
-
     Button(onClick = { navController.navigate(Routes.SOLO) }, modifier = Modifier.fillMaxWidth()) {
       Text("Solo")
     }
-
     Spacer(modifier = Modifier.height(16.dp))
-
     Button(onClick = { navController.navigate(Routes.MULTI) }, modifier = Modifier.fillMaxWidth()) {
       Text("Multi")
     }

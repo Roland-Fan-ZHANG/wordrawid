@@ -24,18 +24,14 @@ fun MultiScreen(navController: NavController) {
       fontSize = 28.sp,
       style = MaterialTheme.typography.headlineMedium
     )
-
     Spacer(modifier = Modifier.height(48.dp))
-
     Button(
       onClick = {navController.navigate(Routes.CREATE_GAME)},
       modifier = Modifier.fillMaxWidth()
     ) {
       Text("Créer une partie")
     }
-
     Spacer(modifier = Modifier.height(16.dp))
-
     Button(
       onClick = { navController.navigate(Routes.JOIN_GAME) },
       modifier = Modifier.fillMaxWidth()
