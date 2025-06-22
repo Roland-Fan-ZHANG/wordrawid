@@ -13,7 +13,6 @@ import fr.uge.wordrawid.dto.ws.GameMessage
 import fr.uge.wordrawid.dto.ws.LobbyMessage
 import fr.uge.wordrawid.dto.ws.LobbyMessageType
 import fr.uge.wordrawid.model.Player
-import fr.uge.wordrawid.navigation.GameSharedViewModel
 import fr.uge.wordrawid.navigation.Routes
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -47,7 +46,7 @@ private fun showNotification(context: Context, title: String, message: String) {
 
 object StompClientManager {
   private const val TAG = "STOMP"
-  private lateinit var gameSharedViewModel: GameSharedViewModel
+  private lateinit var multiViewModel: MultiViewModel
   private lateinit var appContext: Context
   private var stompClient: StompClient? = null
   private val disposables = CompositeDisposable()
@@ -61,8 +60,8 @@ object StompClientManager {
     appContext = context.applicationContext
   }
 
-  fun initViewModel(viewModel: GameSharedViewModel) {
-    gameSharedViewModel = viewModel
+  fun initViewModel(viewModel: MultiViewModel) {
+    multiViewModel = viewModel
   }
 
   @SuppressLint("CheckResult")
@@ -171,7 +170,7 @@ object StompClientManager {
           Log.i(TAG, "🎯 Données de jeu reçues pour gameId=${data.lobby.id}")
           downloadImage(appContext, data.imageUrl, data.lobby.id) { file ->
             gameImageFile = file
-            gameSharedViewModel.currentGameData = data.lobby
+            multiViewModel.currentGameData = data.lobby
             navController.navigate("game/${data.lobby.id}")
           }
         } catch (e: Exception) {

@@ -7,6 +7,6 @@ import kotlinx.serialization.Serializable
 data class JoinLobbyResponse(
   val player: Player,
   val joinCode: String,
-  val gameId: Long,
+  val lobbyId: Long,
   val otherPlayers: List<Player>
 )

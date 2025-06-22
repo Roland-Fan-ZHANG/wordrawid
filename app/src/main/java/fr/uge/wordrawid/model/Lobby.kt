@@ -8,6 +8,5 @@ data class Lobby(
   val joinCode: String,
   val adminName: String,
   val players: List<Player>,
-  var gameState: GameState,
   val gameManager: GameManager
 )

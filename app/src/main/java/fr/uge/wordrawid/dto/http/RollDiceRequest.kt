@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RollDiceRequest(
-  val sessionId: Long,
+  val lobbyId: Long,
   val playerId: Long
 )

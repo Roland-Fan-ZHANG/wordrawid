@@ -3,8 +3,10 @@ package fr.uge.wordrawid.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class GameState {
-  WAITING_FOR_PLAYERS,
-  RUNNING,
-  FINISHED,
+enum class CellType {
+  NEUTRAL,
+  MINIGAME1,
+  MINIGAME2,
+  BONUS,
+  MALUS,
 }

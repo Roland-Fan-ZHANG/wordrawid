@@ -64,7 +64,7 @@ fun JoinGameScreen(navController: NavController) {
                     result.player.id.toString(),
                     navController
                 )
-              navController.navigate("lobby/${result.gameId}?joinCode=${result.joinCode}&isAdmin=false")
+              navController.navigate("lobby/${result.lobbyId}?joinCode=${result.joinCode}&isAdmin=false")
             } else {
               responseMessage = "Erreur lors de la tentative de connexion. Vérifiez les infos."
             }

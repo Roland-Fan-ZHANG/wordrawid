@@ -2,7 +2,6 @@ package fr.uge.wordrawid.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -13,12 +12,12 @@ import androidx.navigation.navArgument
 import fr.uge.wordrawid.MenuScreen
 import fr.uge.wordrawid.minigame.BalloonGameScreen
 import fr.uge.wordrawid.minigame.CompassGameScreen
-import fr.uge.wordrawid.model.Lobby
 import fr.uge.wordrawid.multi.CreateGameScreen
 import fr.uge.wordrawid.multi.GameScreen
 import fr.uge.wordrawid.multi.JoinGameScreen
 import fr.uge.wordrawid.multi.LobbyScreen
 import fr.uge.wordrawid.multi.MultiScreen
+import fr.uge.wordrawid.multi.MultiViewModel
 import fr.uge.wordrawid.multi.StompClientManager
 import fr.uge.wordrawid.solo.SoloScreen
 import fr.uge.wordrawid.solo.WinScreen
@@ -28,9 +27,9 @@ import fr.uge.wordrawid.solo.WinScreen
 fun AppNavGraph(
   navController: NavHostController = rememberNavController(),
 ) {
-  val gameSharedViewModel: GameSharedViewModel = viewModel()
+  val multiViewModel: MultiViewModel = viewModel()
   LaunchedEffect(Unit) {
-    StompClientManager.initViewModel(gameSharedViewModel)
+    StompClientManager.initViewModel(multiViewModel)
   }
 
   NavHost(navController = navController, startDestination = Routes.MENU) {
@@ -58,14 +57,10 @@ fun AppNavGraph(
       arguments = listOf(navArgument("gameId") { type = NavType.LongType })
     ) { backStackEntry ->
       val gameId = backStackEntry.arguments?.getLong("gameId") ?: return@composable
-      GameScreen(gameId = gameId, navController = navController, gameSharedViewModel = gameSharedViewModel)
+      GameScreen(gameId = gameId, navController = navController, multiViewModel = multiViewModel)
     }
     composable(Routes.COMPASS) { CompassGameScreen(navController) }
     composable(Routes.BALLOON) { BalloonGameScreen(navController) }
     composable(Routes.WIN) { WinScreen(navController) }
   }
-}
-
-class GameSharedViewModel : ViewModel() {
-  var currentGameData: Lobby? = null
 }

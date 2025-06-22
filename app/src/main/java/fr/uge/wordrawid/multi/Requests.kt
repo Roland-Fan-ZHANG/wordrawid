@@ -9,6 +9,8 @@ import fr.uge.wordrawid.dto.http.DestroyLobbyRequest
 import fr.uge.wordrawid.dto.http.JoinLobbyRequest
 import fr.uge.wordrawid.dto.http.JoinLobbyResponse
 import fr.uge.wordrawid.dto.http.LeaveLobbyRequest
+import fr.uge.wordrawid.dto.http.RollDiceRequest
+import fr.uge.wordrawid.dto.http.RollDiceResponse
 import fr.uge.wordrawid.dto.http.StartGameRequest
 import fr.uge.wordrawid.model.Player
 import kotlinx.coroutines.CoroutineScope
@@ -20,6 +22,8 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+
+const val SERVER_URL = "http://10.0.2.2:8080"
 
 inline fun <reified Req, reified Res> postHttpRequestWithResponse(
   urlString: String,
@@ -75,7 +79,7 @@ inline fun <reified Req> postHttpRequestNoResponse(
 
 fun createLobby(pseudo: String): CreateLobbyResponse? {
   return postHttpRequestWithResponse(
-    urlString = "http://10.0.2.2:8080/api/lobby/create",
+    urlString = "$SERVER_URL/api/lobby/create",
     body = CreateLobbyRequest(pseudo),
     logTag = "CreateGameScreen"
   )
@@ -88,8 +92,8 @@ fun destroyLobby(
 ) {
   scope.launch(Dispatchers.IO) {
     val code = postHttpRequestNoResponse(
-      urlString = "http://10.0.2.2:8080/api/lobby/destroy",
-      body = DestroyLobbyRequest(sessionId = gameId),
+      urlString = "$SERVER_URL/api/lobby/destroy",
+      body = DestroyLobbyRequest(lobbyId = gameId),
       logTag = "DestroyLobby"
     )
     withContext(Dispatchers.Main) {
@@ -103,7 +107,7 @@ fun destroyLobby(
 
 fun joinLobby(pseudo: String, joinCode: String): JoinLobbyResponse? {
   return postHttpRequestWithResponse(
-    urlString = "http://10.0.2.2:8080/api/lobby/join",
+    urlString = "$SERVER_URL/api/lobby/join",
     body = JoinLobbyRequest(pseudo, joinCode),
     logTag = "JoinGameScreen"
   )
@@ -117,8 +121,8 @@ fun leaveLobby(
 ) {
   scope.launch(Dispatchers.IO) {
     val code = postHttpRequestNoResponse(
-      urlString = "http://10.0.2.2:8080/api/lobby/leave",
-      body = LeaveLobbyRequest(sessionId = gameId, playerId = playerId),
+      urlString ="$SERVER_URL/api/lobby/leave",
+      body = LeaveLobbyRequest(lobbyId = gameId, playerId = playerId),
       logTag = "LeaveLobby"
     )
     withContext(Dispatchers.Main) {
@@ -138,8 +142,8 @@ fun startGame(
 ) {
   scope.launch(Dispatchers.IO) {
     val code = postHttpRequestNoResponse(
-      urlString = "http://10.0.2.2:8080/api/lobby/start",
-      body = StartGameRequest(gameId = gameId, admin = admin),
+      urlString = "$SERVER_URL/api/lobby/start",
+      body = StartGameRequest(lobbyId = gameId, admin = admin),
       logTag = "LeaveLobby"
     )
     withContext(Dispatchers.Main) {
@@ -172,4 +176,12 @@ fun downloadImage(context: Context, imageUrl: String, gameId: Long, onDownloaded
       Log.e("ImageDownload", "Erreur téléchargement image", e)
     }
   }
+}
+
+fun rollDice(lobbyId: Long, playerId: Long): RollDiceResponse? {
+  return postHttpRequestWithResponse(
+    urlString = "http://10.0.2.2:8080/api/lobby/create",
+    body = RollDiceRequest(lobbyId = lobbyId, playerId = playerId),
+    logTag = "RollDice"
+  )
 }
