@@ -33,7 +33,7 @@ fun DiceImage(rollResult: Int, modifier: Modifier = Modifier) {
     Image(
         painter = painterResource(id = imageRes),
         contentDescription = "Face du dé : $rollResult",
-        modifier = modifier.size(100.dp)  // Taille réduite
+        modifier = modifier.size(100.dp)
     )
 }
 
