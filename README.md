@@ -12,7 +12,7 @@ Il devine des mots à partir d'images et joue des mini-jeux pour débloquer les 
 * Actions variées sur les cases : avancer, reculer, mini-jeux, révéler une case et ne rien faire.
 * Mini-jeux :
 
-    * **Balloon** : souffler dans le micro pour gonfler un ballon.
+    * **Voice** : parler dans le micro pour monter une barre.
     * **Compass** : orienter le téléphone dans plusieurs sens aléatoire.
 * Deviner le mot associé à l’image pour remporter la partie.
 
@@ -38,7 +38,7 @@ Il devine des mots à partir d'images et joue des mini-jeux pour débloquer les 
 
 ### 4. **Mini-jeux**
 
-* `BalloonGameScreen.kt` : mini-jeu utilisant le micro pour gonfler un ballon.
+* `VoiceGameScreen.kt` : mini-jeu utilisant le micro pour faire monter une barre.
 * `CompassGameScreen.kt` : mini-jeu utilisant l’accéléromètre pour orienter le téléphone.
 
 ### 5. **Utilitaires**
