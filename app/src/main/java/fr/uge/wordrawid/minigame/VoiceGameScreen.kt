@@ -6,7 +6,6 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -23,7 +22,7 @@ import kotlin.math.absoluteValue
 @androidx.annotation.RequiresPermission(Manifest.permission.RECORD_AUDIO)
 fun BalloonGameScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
-    var balloonSize by remember { mutableFloatStateOf(100f) }
+    var barHeight by remember { mutableFloatStateOf(10f) }
     var isRecording by remember { mutableStateOf(false) }
     var gameEnded by remember { mutableStateOf(false) }
     val gameDurationMillis = 5000L
@@ -36,8 +35,8 @@ fun BalloonGameScreen(navController: NavController) {
             if (granted) {
                 startRecording(scope, onAmplitude = { amplitude ->
                     if (!gameEnded) {
-                        balloonSize = (100f + amplitude * 5).coerceAtMost(600f)
-                        if (balloonSize >= 500f) {
+                        barHeight = (10f + amplitude * 5).coerceAtMost(300f)
+                        if (barHeight >= 250f) {
                             gameResult = true
                             gameEnded = true
                         }
@@ -77,20 +76,24 @@ fun BalloonGameScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Souffle pour gonfler le ballon !", style = MaterialTheme.typography.titleLarge)
+        Text("Parler pour monter la barre", style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(16.dp))
 
         Text("Temps restant : $timeLeft s", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
-        Canvas(
+        Box(
             modifier = Modifier
-                .size(balloonSize.dp)
-                .background(Color.Transparent)
+                .width(60.dp)
+                .height(300.dp)
+                .background(Color.LightGray),
+            contentAlignment = Alignment.BottomCenter
         ) {
-            drawCircle(
-                color = Color.Red,
-                radius = size.minDimension / 2
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(barHeight.dp)
+                    .background(Color.Cyan)
             )
         }
 
@@ -123,7 +126,7 @@ fun startRecording(scope: CoroutineScope, onAmplitude: (Float) -> Unit) {
                 val read = audioRecord.read(buffer, 0, bufferSize)
                 if (read > 0) {
                     val max = buffer.take(read).maxOf { it.toInt().absoluteValue }
-                    onAmplitude(max / 32768f * 100) // Normalisé
+                    onAmplitude(max / 32768f * 100)
                 }
                 delay(50)
             }

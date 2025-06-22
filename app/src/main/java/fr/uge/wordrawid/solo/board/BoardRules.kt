@@ -1,12 +1,15 @@
 package fr.uge.wordrawid.solo.board
 
-val boardActions = List(25) { index ->
-    when (index) {
-        3, 13, 15 -> CaseAction.MoveForward2
-        5, 7, 16, 10 -> CaseAction.MoveBackward3
-        8, 6, 18 -> CaseAction.CompassMiniGame
-        12, 4, 19, 1 -> CaseAction.RevealTile
-        9, 2, 20 -> CaseAction.BalloonMiniGame
-        else -> CaseAction.Nothing
+import kotlin.random.Random
+
+val boardActions: List<CaseAction> by lazy {
+    val actions = mutableListOf<CaseAction>().apply {
+        addAll(List(3) { CaseAction.MoveForward2 })
+        addAll(List(4) { CaseAction.MoveBackward3 })
+        addAll(List(3) { CaseAction.CompassMiniGame })
+        addAll(List(4) { CaseAction.RevealTile })
+        addAll(List(3) { CaseAction.BalloonMiniGame })
+        addAll(List(8) { CaseAction.Nothing })
     }
+    actions.shuffled(Random.Default)
 }
