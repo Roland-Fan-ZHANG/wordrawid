@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import fr.uge.wordrawid.model.Lobby
+import fr.uge.wordrawid.model.Player
 
 class MultiViewModel : ViewModel() {
   var currentGameData: Lobby? = null

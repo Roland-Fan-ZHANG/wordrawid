@@ -1,5 +1,6 @@
 package fr.uge.wordrawid.multi
 
+import androidx.compose.material3.SnackbarHostState
 import fr.uge.wordrawid.model.Cell
 import fr.uge.wordrawid.model.CellType
 import fr.uge.wordrawid.model.GameManager
@@ -13,7 +14,10 @@ fun handleAction(
   position: Int,
   currentPlayerIndex: Int,
   viewModel: MultiViewModel,
-  scope: CoroutineScope
+  scope: CoroutineScope,
+  snackbarHostState: SnackbarHostState,
+  lobbyId: Long,
+  playerId: Long
 ) = scope.launch {
   val action = cell.cellType
   if (!viewModel.hiddenCells[position] &&
@@ -36,7 +40,13 @@ fun handleAction(
         scope = scope
       )
       viewModel.hiddenCells[position] = false
-      // TODO : Requête backend
+      bonusMalusMove(
+        scope = scope,
+        snackbarHostState = snackbarHostState,
+        cellType = CellType.BONUS,
+        lobbyId = lobbyId,
+        playerId = playerId,
+      )
     }
     CellType.MALUS -> {
       animateMovement(
@@ -47,7 +57,13 @@ fun handleAction(
         forward = false
       )
       viewModel.hiddenCells[position] = false
-      // TODO : Requête backend
+      bonusMalusMove(
+        scope = scope,
+        snackbarHostState = snackbarHostState,
+        cellType = CellType.MALUS,
+        lobbyId = lobbyId,
+        playerId = playerId,
+      )
     }
     // TODO : Mini-jeux
     CellType.MINIGAME1, CellType.MINIGAME2 -> viewModel.hiddenCells[position] = false
@@ -71,12 +87,13 @@ fun animateMovement(
   }
 }
 
-fun rolling(
+suspend fun rolling(
   lobbyId: Long,
   player: Player,
   gameManager: GameManager,
   viewModel: MultiViewModel,
-  scope: CoroutineScope
+  scope: CoroutineScope,
+  snackbarHostState: SnackbarHostState,
 ) {
   if (viewModel.rolling) return
   viewModel.rolling = true
@@ -86,21 +103,28 @@ fun rolling(
       delay(50)
     }
   }
-  scope.launch {
-    val diceRequest = rollDice(lobbyId = lobbyId, playerId = player.id)
-    if (diceRequest == null) {
-      viewModel.currentActionText = "Erreur lors du lancer de dé"
-      viewModel.rolling = false
-      return@launch
-    }
-    viewModel.diceResult = diceRequest.diceResult
-    viewModel.displayResult = viewModel.diceResult
+  val diceRequest = rollDice(lobbyId = lobbyId, playerId = player.id)
+  if (diceRequest == null) {
+    viewModel.currentActionText = "Erreur lors du lancer de dé"
     viewModel.rolling = false
-    animateMovement(viewModel, viewModel.diceResult, gameManager.currentPlayerIndex, scope).join()
-    val nextPosition = viewModel.playerPositions[gameManager.currentPlayerIndex]
-    val nextCell = gameManager.board[nextPosition]
-    handleAction(nextCell, nextPosition, gameManager.currentPlayerIndex, viewModel, scope)
+    return
   }
+  viewModel.diceResult = diceRequest.diceResult
+  viewModel.displayResult = viewModel.diceResult
+  viewModel.rolling = false
+  animateMovement(viewModel, viewModel.diceResult, gameManager.currentPlayerIndex, scope).join()
+  val nextPosition = viewModel.playerPositions[gameManager.currentPlayerIndex]
+  val nextCell = gameManager.board[nextPosition]
+  handleAction(
+    nextCell,
+    nextPosition,
+    gameManager.currentPlayerIndex,
+    viewModel,
+    scope,
+    snackbarHostState,
+    lobbyId,
+    player.id
+  )
 }
 
 fun checkGuess(

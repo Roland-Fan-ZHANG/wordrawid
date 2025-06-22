@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.wordrawid.navigation.LoadingScreen
+import kotlinx.coroutines.launch
 import java.io.File
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -27,6 +29,7 @@ fun GameScreen(
   navController: NavController,
   multiViewModel: MultiViewModel
 ) {
+  val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val gameData = multiViewModel.currentGameData
@@ -36,6 +39,7 @@ fun GameScreen(
     return
   }
   val currentPlayer = gameData.players[gameData.gameManager.currentPlayerIndex]
+  val isCurrentPlayer = currentPlayer.id == StompClientManager.currentPlayerId
 
   BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
     maxWidth
@@ -54,15 +58,20 @@ fun GameScreen(
         Board(multiViewModel, image, gameData.players)
 
         Spacer(modifier = Modifier.height(20.dp))
-        DiceSection(multiViewModel,
+        DiceSection(
+          viewModel = multiViewModel,
+          isCurrentPlayer = isCurrentPlayer,
           onRoll = {
-            rolling(
-              lobbyId = gameData.id,
-              player = currentPlayer,
-              gameManager = gameData.gameManager,
-              viewModel =  multiViewModel,
-              scope = scope,
-            )
+            scope.launch {
+              rolling(
+                lobbyId = gameData.id,
+                player = currentPlayer,
+                gameManager = gameData.gameManager,
+                viewModel =  multiViewModel,
+                scope = scope,
+                snackbarHostState = snackbarHostState,
+              )
+            }
           }
         )
       }

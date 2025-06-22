@@ -3,6 +3,7 @@ package fr.uge.wordrawid.multi
 import android.content.Context
 import android.util.Log
 import androidx.compose.material3.SnackbarHostState
+import fr.uge.wordrawid.dto.http.BonusMalusMoveRequest
 import fr.uge.wordrawid.dto.http.CreateLobbyRequest
 import fr.uge.wordrawid.dto.http.CreateLobbyResponse
 import fr.uge.wordrawid.dto.http.DestroyLobbyRequest
@@ -12,6 +13,7 @@ import fr.uge.wordrawid.dto.http.LeaveLobbyRequest
 import fr.uge.wordrawid.dto.http.RollDiceRequest
 import fr.uge.wordrawid.dto.http.RollDiceResponse
 import fr.uge.wordrawid.dto.http.StartGameRequest
+import fr.uge.wordrawid.model.CellType
 import fr.uge.wordrawid.model.Player
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -158,7 +160,7 @@ fun startGame(
 fun downloadImage(context: Context, imageUrl: String, gameId: Long, onDownloaded: (File) -> Unit) {
   CoroutineScope(Dispatchers.IO).launch {
     try {
-      val url = URL("http://10.0.2.2:8080$imageUrl")
+      val url = URL("$SERVER_URL$imageUrl")
       Log.i("imageUrl", imageUrl)
       val connection = url.openConnection() as HttpURLConnection
       connection.requestMethod = "GET"
@@ -180,8 +182,30 @@ fun downloadImage(context: Context, imageUrl: String, gameId: Long, onDownloaded
 
 fun rollDice(lobbyId: Long, playerId: Long): RollDiceResponse? {
   return postHttpRequestWithResponse(
-    urlString = "http://10.0.2.2:8080/api/lobby/create",
+    urlString = "$SERVER_URL/api/lobby/create",
     body = RollDiceRequest(lobbyId = lobbyId, playerId = playerId),
     logTag = "RollDice"
   )
+}
+
+fun bonusMalusMove(
+  scope: CoroutineScope,
+  snackbarHostState: SnackbarHostState,
+  cellType: CellType,
+  lobbyId: Long,
+  playerId: Long,
+) {
+  scope.launch(Dispatchers.IO) {
+    val code = postHttpRequestNoResponse(
+      urlString = "$SERVER_URL/api/play/bonus-malus",
+      body = BonusMalusMoveRequest(cellType, lobbyId, playerId),
+      logTag = "BonusMalusMove"
+    )
+    withContext(Dispatchers.Main) {
+      snackbarHostState.showSnackbar(
+        if (code in 200..299) "Déplacement spécial effectué avec succès"
+        else "Erreur serveur : $code"
+      )
+    }
+  }
 }

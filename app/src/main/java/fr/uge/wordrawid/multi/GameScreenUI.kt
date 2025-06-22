@@ -92,12 +92,14 @@ fun Board(
 }
 
 @Composable
-fun DiceSection(viewModel: MultiViewModel, onRoll: () -> Unit) {
-  DiceWithImage(
-    displayResult = viewModel.displayResult,
-    onRoll = onRoll,
-    rolling = viewModel.rolling
-  )
+fun DiceSection(viewModel: MultiViewModel, isCurrentPlayer: Boolean, onRoll: () -> Unit) {
+  if (isCurrentPlayer) {
+    DiceWithImage(
+      displayResult = viewModel.displayResult,
+      onRoll = onRoll,
+      rolling = viewModel.rolling
+    )
+  }
 }
 
 @Composable
